@@ -1,6 +1,5 @@
 #include <stdio.h>
-#include <strings.h>
-#include <ctype.h>
+#include <stdlib.h>
 #include "errors.h"
 
 int main(int argc, char* argv[]){
