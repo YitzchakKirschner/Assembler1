@@ -6,9 +6,10 @@ int main(int argc, char* argv[]){
     int i; /* Counter */
 
     /* Verify recipe of file name in argv */
-    if(argc < 2)
+    if(argc < 2){
         error_output(1);
-    
+        return -1;
+    }
     /* Have argv point at the first file name */
     argv++;
 
@@ -19,9 +20,10 @@ int main(int argc, char* argv[]){
         as_file = fopen(*argv, "r");
 
         /* Confirm file has opened correctly */
-        if (as_file == NULL) 
+        if (as_file == NULL){
             error_output(2);
-
+            return -1;
+        }
         /* Close the .as file */
         fclose(as_file);
     }
