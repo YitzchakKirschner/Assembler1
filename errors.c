@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "errors.h"
 
 void error_output(int error_code){

@@ -1,5 +1,5 @@
 #include "macro_extracter.h"
-#include "errors.h"
+
 
 int main(int argc, char* argv[]){
     int i; /* Counter */
@@ -22,14 +22,18 @@ int main(int argc, char* argv[]){
         /* Confirm file has opened correctly */
         if (!as_file_ptr){
             error_output(2);
+            fclose(as_file_ptr);
             return -1;
         }
 
+        /* Pointer to file after macro extraction */
         am_file_ptr = extractMacros(as_file_ptr, argv[i]);
+        if (am_file_ptr == NULL)/* Error, no file returned*/
+            return -1;
 
-        /* Close the .as file */
+        /* Close the .as and .am files */
         fclose(as_file_ptr);
         fclose(am_file_ptr);
     }
-    return 1;
+    return 0;
 }
