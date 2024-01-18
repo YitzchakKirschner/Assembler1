@@ -6,7 +6,10 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name){
     char line[MAX_LINE_LENGTH];
     MacroNode *macros = NULL;
     int in_macro_flag = 0;
-    MacroNode *currentMacro = NULL;
+    MacroNode *foundMacro = NULL;
+    MacroNode *current_macro = NULL;
+    MacroNode *temp = NULL;
+    char first_field[MAX_MACRO_NAME_LENGTH];
 
     /* Get file name and open file. */
     strcpy(am_file_name, file_name);
@@ -20,22 +23,24 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name){
             return NULL;
         }
 
+    /* Loop line by line. if end or begining of macro, change flag.
+       If the first word if the file is the name of a macro, replace with macro.
+       If the line is not macro related then copy to output file. */
     while (fgets(line, MAX_LINE_LENGTH, as_file_ptr)) {
         if (in_macro_flag) {
             if (isEndMacroDefinition(line)) {
                 in_macro_flag = 0;
             } else {
-                addLineToMacro(currentMacro, line);
-                continue; /* No need to add to macro file */
+                addLineToMacro(current_macro, line);
+                continue; /* No need to add to macro .am file */
             }
         }
 
-	/* Store the first word in the line into first_field*/
-        char firstField[MAX_MACRO_NAME_LENGTH];
-        sscanf(line, "%s", firstField);
+	    /* Store the first word in the line into first_field*/
+        sscanf(line, "%s", first_field);
 
-	/* If the first word is a name of a macro, replace it with the macro */
-        MacroNode *foundMacro = findMacro(macros, firstField);
+	    /* If the first word in the line is a name of a macro, replace it with the macro */
+        foundMacro = findMacro(macros, first_field);
         if (foundMacro) {
             // Replace macro with its lines
             for (int i = 0; i < foundMacro->line_count; i++) {
@@ -43,10 +48,17 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name){
             }
         } else if (isMacroDefinition(line)) {
             in_macro_flag = 1;
-            currentMacro = addMacro(&macros, line + 4); // line + 4 skips "mcr "
+            current_macro = addMacro(&macros, line + 4); /* line + 4 skips "mcr " */
         } else {/* just a normal line */
             fputs(line, am_file_ptr);
         }
+    }
+
+    /* Free the linked list */
+    while (macros) {
+        temp = macros;
+        macros = macros->next;
+        free(temp);
     }
 
     return am_file_ptr;
