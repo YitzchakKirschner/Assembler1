@@ -1,4 +1,5 @@
 #include "macro_extracter.h"
+/* macro to check if first num numbers in ptr, are str*/
 #define firstWord(ptr, str, num) (strncmp((ptr), (str), (num)) == 0)
 
 FILE* extractMacros(FILE* as_file_ptr, char* file_name){
@@ -37,8 +38,8 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name){
             }
         }
 
-	    /* Store the first word in the line into first_field*/
-        sscanf(line, "%s", first_field);
+	    /* Store the first word in the line into first_field, skip any amount of spaces or tabs*/
+        sscanf(line, "*[\t ]%s*[\t ]", first_field);
 
 	    /* If the first word in the line is a name of a macro, replace it with the macro */
         foundMacro = findMacro(macros, first_field);
@@ -71,12 +72,21 @@ int isMcrOrEndmcr (const char* line){
     int mcr;
     int endmcr;
     /* Skip leading spaces and tabs*/
-    while (line[i] == ' ' || line[i] == '\t') {
+    while (line[i] == ' ' || line[i] == '\t')
         i++;
-    }
 
     /* Check if the rest of the line starts with "mcr " */
     mcr = (firstWord(line+i, "mcr ", 4)) || (firstWord(line+i, "mcr\t", 4)) || (firstWord(line+i, "mcr\n", 4));
     endmcr = (firstWord(line+i, "endmcr ", 7)) || (firstWord(line+i, "endmcr\t", 7)) || (firstWord(line+i, "endmcr\n", 7));
     return mcr || endmcr;
+}
+
+MacroNode* findMacro(MacroNode *head, const char *name) {
+    while (head) {
+        if (strcmp(head->name, name) == 0) {
+            return head;
+        }
+        head = head->next;/* Search next MacroNode in list*/
+    }
+    return NULL;/* Not a macro name */
 }
