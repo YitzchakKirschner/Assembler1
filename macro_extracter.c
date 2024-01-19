@@ -30,8 +30,9 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name){
        If the line is not macro related then copy to output file. */
     while (fgets(line, MAX_LINE_LENGTH, as_file_ptr)) {
         if (in_macro_flag) {
-            if (isMcrOrEndmcr(line)) {/*Check if endmcr*/
+            if (isMcrOrEndmcr(line)) {/*Check for endmcr*/
                 in_macro_flag = 0;
+                continue; /* No need to add to macro .am file */
             } else {
                 addLineToMacro(current_macro, line);
                 continue; /* No need to add to macro .am file */
@@ -48,7 +49,7 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name){
             for (int i = 0; i < foundMacro->line_count; i++) {
                 fputs(foundMacro->lines[i], am_file_ptr);
             }
-        } else if (isMcrOrEndmcr(line)) {
+        } else if (isMcrOrEndmcr(line)) {/*Macro definition*/
             in_macro_flag = 1;
             current_macro = addMacro(&macros, line + 4); /* line + 4 skips "mcr " */
         } else {/* just a normal line */
@@ -81,6 +82,7 @@ int isMcrOrEndmcr (const char* line){
     return mcr || endmcr;
 }
 
+/* returns the macro of the first word in the line if exsists */
 MacroNode* findMacro(MacroNode *head, const char *name) {
     while (head) {
         if (strcmp(head->name, name) == 0) {
@@ -89,4 +91,23 @@ MacroNode* findMacro(MacroNode *head, const char *name) {
         head = head->next;/* Search next MacroNode in list*/
     }
     return NULL;/* Not a macro name */
+}
+
+/* adds the line to the macro and updates line_count */
+void addLineToMacro(MacroNode *macro, const char *line) {
+    if (macro->line_count < MAX_MACRO_LINES) {
+        strncpy(macro->lines[macro->line_count++], line, MAX_LINE_LENGTH);
+    }
+}
+
+
+MacroNode* addMacro(MacroNode **head, const char *name) {
+    MacroNode *newNode = (MacroNode *)malloc(sizeof(MacroNode));
+    if (newNode) {
+        strncpy(newNode->name, name, MAX_MACRO_NAME_LENGTH);
+        newNode->line_count = 0;
+        newNode->next = *head;
+        *head = newNode;
+    }
+    return newNode;
 }
