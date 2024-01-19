@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "errors.h"
 #define MAX_LINE_LENGTH 1024
 #define MAX_MACRO_NAME_LENGTH 100
@@ -22,3 +19,4 @@ int isMcrOrEndmcr(const char *line);
 MacroNode* findMacro(MacroNode *head, const char *name);
 void addLineToMacro(MacroNode *macro, const char *line);
 MacroNode* addMacro(MacroNode **head, const char *name);
+void getFirstWord(const char *line, char *firstWord);

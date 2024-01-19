@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "macro_extracter.h"
 /* macro to check if first num numbers in ptr, are str*/
 #define firstWord(ptr, str, num) (strncmp((ptr), (str), (num)) == 0)
@@ -12,11 +15,12 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name){
     MacroNode *current_macro = NULL;
     MacroNode *temp = NULL;
     char first_field[MAX_MACRO_NAME_LENGTH];
+    int i; /*counter*/
 
     /* Get file name and open file. */
     strcpy(am_file_name, file_name);
     strcat(am_file_name, ".am"); /* Add "as" to the end of the file name and increment the argv ptr*/
-    am_file_ptr = fopen(*am_file_name, "w");
+    am_file_ptr = fopen(am_file_name, "w");
 
     /* Confirm file opening. */
     if (!am_file_ptr){
@@ -40,13 +44,13 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name){
         }
 
 	    /* Store the first word in the line into first_field, skip any amount of spaces or tabs*/
-        sscanf(line, "*[\t ]%s*[\t ]", first_field);
+        getFirstWord(line, first_field);
 
 	    /* If the first word in the line is a name of a macro, replace it with the macro */
         foundMacro = findMacro(macros, first_field);
         if (foundMacro) {
             /* Replace macro with its lines*/
-            for (int i = 0; i < foundMacro->line_count; i++) {
+            for (i = 0; i < foundMacro->line_count; i++) {
                 fputs(foundMacro->lines[i], am_file_ptr);
             }
         } else if (isMcrOrEndmcr(line)) {/*Macro definition*/
@@ -110,4 +114,22 @@ MacroNode* addMacro(MacroNode **head, const char *name) {
         *head = newNode;
     }
     return newNode;
+}
+
+
+void getFirstWord(const char *line, char *firstWord) {
+    int i = 0, j = 0;
+
+    /* Skip leading whitespaces */
+    while (line[i] == ' ' || line[i] == '\t') {
+        i++;
+    }
+
+    /* Capture the first word*/
+    while (line[i] != '\0' && line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
+        firstWord[j++] = line[i++];
+    }
+
+    /* Null-terminate the first word */
+    firstWord[j] = '\0';
 }
