@@ -18,8 +18,7 @@ typedef struct MacroNode {
 
 /* Prototype functions */
 FILE* extractMacros(FILE* as_file_ptr, char* file_name);
-int isMacroDefinition(const char *line);
-int isEndMacroDefinition(const char *line);
+int isMcrOrEndmcr(const char *line);
 MacroNode* findMacro(MacroNode *head, const char *name);
 void addLineToMacro(MacroNode *macro, const char *line);
 MacroNode* addMacro(MacroNode **head, const char *name);

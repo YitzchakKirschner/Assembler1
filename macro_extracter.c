@@ -1,4 +1,5 @@
 #include "macro_extracter.h"
+#define firstWord(ptr, str, num) (strncmp((ptr), (str), (num)) == 0)
 
 FILE* extractMacros(FILE* as_file_ptr, char* file_name){
     FILE *am_file_ptr;
@@ -28,7 +29,7 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name){
        If the line is not macro related then copy to output file. */
     while (fgets(line, MAX_LINE_LENGTH, as_file_ptr)) {
         if (in_macro_flag) {
-            if (isEndMacroDefinition(line)) {
+            if (isMcrOrEndmcr(line)) {/*Check if endmcr*/
                 in_macro_flag = 0;
             } else {
                 addLineToMacro(current_macro, line);
@@ -42,11 +43,11 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name){
 	    /* If the first word in the line is a name of a macro, replace it with the macro */
         foundMacro = findMacro(macros, first_field);
         if (foundMacro) {
-            // Replace macro with its lines
+            /* Replace macro with its lines*/
             for (int i = 0; i < foundMacro->line_count; i++) {
                 fputs(foundMacro->lines[i], am_file_ptr);
             }
-        } else if (isMacroDefinition(line)) {
+        } else if (isMcrOrEndmcr(line)) {
             in_macro_flag = 1;
             current_macro = addMacro(&macros, line + 4); /* line + 4 skips "mcr " */
         } else {/* just a normal line */
@@ -62,4 +63,20 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name){
     }
 
     return am_file_ptr;
+}
+
+/*The function returns true if first word of line is "mcr" or "endmcr"*/
+int isMcrOrEndmcr (const char* line){
+    int i = 0;
+    int mcr;
+    int endmcr;
+    /* Skip leading spaces and tabs*/
+    while (line[i] == ' ' || line[i] == '\t') {
+        i++;
+    }
+
+    /* Check if the rest of the line starts with "mcr " */
+    mcr = (firstWord(line+i, "mcr ", 4)) || (firstWord(line+i, "mcr\t", 4)) || (firstWord(line+i, "mcr\n", 4));
+    endmcr = (firstWord(line+i, "endmcr ", 7)) || (firstWord(line+i, "endmcr\t", 7)) || (firstWord(line+i, "endmcr\n", 7));
+    return mcr || endmcr;
 }
