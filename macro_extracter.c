@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "macro_extracter.h"
+#include "errors.h"
 /* macro to check if first num numbers in ptr, are str*/
 #define firstWord(ptr, str, num) (strncmp((ptr), (str), (num)) == 0)
 

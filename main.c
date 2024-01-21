@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "macro_extracter.h"
+#include "errors.h"
 
 
 int main(int argc, char* argv[]){

@@ -1,4 +1,4 @@
-#include "errors.h"
+
 #define MAX_LINE_LENGTH 1024
 #define MAX_MACRO_NAME_LENGTH 100
 #define MAX_MACRO_LINES 100
