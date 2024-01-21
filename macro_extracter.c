@@ -10,7 +10,7 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name){
     FILE *am_file_ptr;
     char am_file_name[MAX_FILE_NAME_LENGTH];
     char line[MAX_LINE_LENGTH];
-    MacroNode *macros = NULL;
+    MacroNode *macros = NULL; /*List of macros*/
     int in_macro_flag = 0;
     MacroNode *foundMacro = NULL;
     MacroNode *current_macro = NULL;
