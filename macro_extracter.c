@@ -56,7 +56,8 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name){
             }
         } else if (isMcrOrEndmcr(line)) {/*Macro definition*/
             in_macro_flag = 1;
-            current_macro = addMacro(&macros, line + 4); /* line + 4 skips "mcr " */
+            getFirstWord(line + 4, first_field); /* set first_field to line + 4 skips "mcr " */
+            current_macro = addMacro(&macros, first_field); /* Add the macro with the name of first_field*/
         } else {/* just a normal line */
             fputs(line, am_file_ptr);
         }
