@@ -1,16 +1,36 @@
 {
-    "type": "shell",
-    "label": "build project",
-    "command": "make",
-    "args": [
-        "-C",
-        "/home/yitzchok/Desktop/Assembler1"
-    ],
-    "group": {
-        "kind": "build",
-        "isDefault": true
-    },
-    "problemMatcher": [
-        "$gcc"
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "configure project",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                ".",
+                "-B",
+                "/home/yitzchok/Desktop/Assembler1"
+            ],
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "build project",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "/home/yitzchok/Desktop/Assembler1"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "dependsOn": "configure project"
+        }
     ]
 }

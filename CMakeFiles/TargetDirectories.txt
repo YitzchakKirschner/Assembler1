@@ -1,0 +1,3 @@
+/home/yitzchok/Desktop/Assembler1/CMakeFiles/assembler.dir
+/home/yitzchok/Desktop/Assembler1/CMakeFiles/edit_cache.dir
+/home/yitzchok/Desktop/Assembler1/CMakeFiles/rebuild_cache.dir
