@@ -1,0 +1,17 @@
+[
+{
+  "directory": "/home/yitzchok/Desktop/Assembler1/build",
+  "command": "/usr/bin/gcc   -g -o CMakeFiles/assembler.dir/main.c.o -c /home/yitzchok/Desktop/Assembler1/main.c",
+  "file": "/home/yitzchok/Desktop/Assembler1/main.c"
+},
+{
+  "directory": "/home/yitzchok/Desktop/Assembler1/build",
+  "command": "/usr/bin/gcc   -g -o CMakeFiles/assembler.dir/macro_extracter.c.o -c /home/yitzchok/Desktop/Assembler1/macro_extracter.c",
+  "file": "/home/yitzchok/Desktop/Assembler1/macro_extracter.c"
+},
+{
+  "directory": "/home/yitzchok/Desktop/Assembler1/build",
+  "command": "/usr/bin/gcc   -g -o CMakeFiles/assembler.dir/errors.c.o -c /home/yitzchok/Desktop/Assembler1/errors.c",
+  "file": "/home/yitzchok/Desktop/Assembler1/errors.c"
+}
+]

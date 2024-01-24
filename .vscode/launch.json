@@ -6,7 +6,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "/home/yitzchok/Desktop/Assembler1/assembler",
-            "args": [],
+            "args": ["test1"],
             "stopAtEntry": false,
             "cwd": "/home/yitzchok/Desktop/Assembler1",
             "environment": [],

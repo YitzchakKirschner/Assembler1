@@ -1,0 +1,1 @@
+/usr/bin/gcc -g -rdynamic CMakeFiles/assembler.dir/main.c.o CMakeFiles/assembler.dir/macro_extracter.c.o CMakeFiles/assembler.dir/errors.c.o -o assembler 
