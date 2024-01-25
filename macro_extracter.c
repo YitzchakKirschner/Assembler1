@@ -3,6 +3,8 @@
 #include <string.h>
 #include "macro_extracter.h"
 #include "errors.h"
+#include "saved_words.h"
+
 /* macro to check if first num numbers in ptr, are str*/
 #define firstWord(ptr, str, num) (strncmp((ptr), (str), (num)) == 0)
 
@@ -56,7 +58,11 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name){
             }
         } else if (isMcr(line)) {/*Macro definition*/
             in_macro_flag = 1;
-            getFirstWord(line + 4, first_field); /* set first_field to line + 4 skips "mcr " */
+            getFirstWord(line + 4, first_field); /* set first_field to line + 4, skips "mcr " */
+            /*if(isSavedWord(first_field)){ /* Used a saved word to name a macro 
+                error_output(3);
+                return NULL;
+            }*/
             current_macro = addMacro(&macros, first_field); /* Add the macro with the name of first_field*/
         } else {/* just a normal line */
             fputs(line, am_file_ptr);

@@ -13,6 +13,10 @@ void error_output(int error_code){
         printf("The file you've given does not exist in the folder :(\n");
         break;
 
+    case USED_SAVED_WORD:
+        printf("The word you used to name your macro, is a seved word. Try using a different name.\n");
+        break;
+        
     default:
         break;
     }

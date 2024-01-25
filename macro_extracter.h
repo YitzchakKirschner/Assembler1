@@ -20,3 +20,5 @@ MacroNode* findMacro(MacroNode *head, const char *name);
 void addLineToMacro(MacroNode *macro, const char *line);
 MacroNode* addMacro(MacroNode **head, const char *name);
 void getFirstWord(const char *line, char *firstWord);
+int isMcr(const char* line);
+int isEndmcr(const char* line);

@@ -10,8 +10,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Add an executable
-add_executable(assembler main.c macro_extracter.c errors.c)
+add_executable(assembler main.c macro_extracter.c errors.c saved_words.c)
 
 # Here, 'my_executable_name' is the name of the executable you want to build,
 # and 'main.c' is the main C file. If you have more source files, list them h
-

@@ -11,6 +11,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/yitzchok/Desktop/Assembler1/errors.c" "CMakeFiles/assembler.dir/errors.c.o" "gcc" "CMakeFiles/assembler.dir/errors.c.o.d"
   "/home/yitzchok/Desktop/Assembler1/macro_extracter.c" "CMakeFiles/assembler.dir/macro_extracter.c.o" "gcc" "CMakeFiles/assembler.dir/macro_extracter.c.o.d"
   "/home/yitzchok/Desktop/Assembler1/main.c" "CMakeFiles/assembler.dir/main.c.o" "gcc" "CMakeFiles/assembler.dir/main.c.o.d"
+  "/home/yitzchok/Desktop/Assembler1/saved_words.c" "CMakeFiles/assembler.dir/saved_words.c.o" "gcc" "CMakeFiles/assembler.dir/saved_words.c.o.d"
   )
 
 # Targets to which this target links.

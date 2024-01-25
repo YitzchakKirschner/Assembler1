@@ -3,6 +3,7 @@
 #include <string.h>
 #include "macro_extracter.h"
 #include "errors.h"
+#include "saved_words.h"
 
 
 int main(int argc, char* argv[]){
@@ -10,10 +11,12 @@ int main(int argc, char* argv[]){
     FILE* as_file_ptr;
     FILE* am_file_ptr;
     char as_file_name[MAX_FILE_NAME_LENGTH];
+    Word* head = defineLanguage(); /* Create our insturction set*/
 
     /* Verify recipe of file name in argv */
     if(argc < 2){
         error_output(1);
+        freeLanguage(head);
         return -1;
     }
 
@@ -27,17 +30,23 @@ int main(int argc, char* argv[]){
         if (!as_file_ptr){
             error_output(2);
             fclose(as_file_ptr);
+            freeLanguage(head);
             return -1;
         }
 
         /* Pointer to file after macro extraction */
         am_file_ptr = extractMacros(as_file_ptr, argv[i]);
-        if (am_file_ptr == NULL)/* Error, no file returned*/
+        if (!am_file_ptr){/* Error, no file returned*/
+            fclose(as_file_ptr);
+            freeLanguage(head);
             return -1;
-
+        }
         /* Close the .as and .am files */
         fclose(as_file_ptr);
         fclose(am_file_ptr);
     }
+
+    freeLanguage(head);
+
     return 0;
 }

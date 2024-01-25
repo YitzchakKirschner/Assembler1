@@ -1,5 +1,5 @@
-CMakeFiles/assembler.dir/macro_extracter.c.o: \
- /home/yitzchok/Desktop/Assembler1/macro_extracter.c \
+CMakeFiles/assembler.dir/saved_words.c.o: \
+ /home/yitzchok/Desktop/Assembler1/saved_words.c \
  /usr/include/stdc-predef.h /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/features-time64.h \
@@ -50,7 +50,4 @@ CMakeFiles/assembler.dir/macro_extracter.c.o: \
  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h /usr/include/string.h \
  /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
- /usr/include/strings.h \
- /home/yitzchok/Desktop/Assembler1/macro_extracter.h \
- /home/yitzchok/Desktop/Assembler1/errors.h \
- /home/yitzchok/Desktop/Assembler1/saved_words.h
+ /usr/include/strings.h /home/yitzchok/Desktop/Assembler1/saved_words.h

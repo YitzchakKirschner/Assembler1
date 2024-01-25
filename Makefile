@@ -201,6 +201,30 @@ main.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/assembler.dir/build.make CMakeFiles/assembler.dir/main.c.s
 .PHONY : main.c.s
 
+saved_words.o: saved_words.c.o
+.PHONY : saved_words.o
+
+# target to build an object file
+saved_words.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/assembler.dir/build.make CMakeFiles/assembler.dir/saved_words.c.o
+.PHONY : saved_words.c.o
+
+saved_words.i: saved_words.c.i
+.PHONY : saved_words.i
+
+# target to preprocess a source file
+saved_words.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/assembler.dir/build.make CMakeFiles/assembler.dir/saved_words.c.i
+.PHONY : saved_words.c.i
+
+saved_words.s: saved_words.c.s
+.PHONY : saved_words.s
+
+# target to generate assembly for a file
+saved_words.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/assembler.dir/build.make CMakeFiles/assembler.dir/saved_words.c.s
+.PHONY : saved_words.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -219,6 +243,9 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... saved_words.o"
+	@echo "... saved_words.i"
+	@echo "... saved_words.s"
 .PHONY : help
 
 
