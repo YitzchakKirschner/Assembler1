@@ -1,10 +1,10 @@
 Hello world, whats up
-mcr firstmcr
+mcr add
 this is the first line of macro
-this is the second line of macro
+AAAAAAAAAAAAAA
 endmcr
 this is the first line of the file
 thsi is the second line ofthe file
-firstmcr
+add
 this is the third line of the file
 hello world

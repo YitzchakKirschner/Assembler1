@@ -52,5 +52,5 @@ CMakeFiles/assembler.dir/macro_extracter.c.o: \
  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
  /usr/include/strings.h \
  /home/yitzchok/Desktop/Assembler1/macro_extracter.h \
- /home/yitzchok/Desktop/Assembler1/errors.h \
- /home/yitzchok/Desktop/Assembler1/saved_words.h
+ /home/yitzchok/Desktop/Assembler1/saved_words.h \
+ /home/yitzchok/Desktop/Assembler1/errors.h

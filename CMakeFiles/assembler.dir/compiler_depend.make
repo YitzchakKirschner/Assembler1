@@ -116,8 +116,8 @@ CMakeFiles/assembler.dir/macro_extracter.c.o: macro_extracter.c \
   /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
   /usr/include/strings.h \
   macro_extracter.h \
-  errors.h \
-  saved_words.h
+  saved_words.h \
+  errors.h
 
 CMakeFiles/assembler.dir/main.c.o: main.c \
   /usr/include/stdc-predef.h \
@@ -178,8 +178,8 @@ CMakeFiles/assembler.dir/main.c.o: main.c \
   /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
   /usr/include/strings.h \
   macro_extracter.h \
-  errors.h \
-  saved_words.h
+  saved_words.h \
+  errors.h
 
 CMakeFiles/assembler.dir/saved_words.c.o: saved_words.c \
   /usr/include/stdc-predef.h \

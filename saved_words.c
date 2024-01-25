@@ -4,8 +4,6 @@
 #include "saved_words.h"
 
 
-
-
 Word* defineLanguage() {
     Word *head = NULL, *temp = NULL, *current = NULL;
     /* Create and link the Words*/
@@ -59,10 +57,21 @@ Word* createWord(char name[], int code, char src_reg_type[], char dst_reg_type[]
     return newWord;
 }
 
+/* The function checks if first_field is a saved word */
+int isSavedWord(char first_field[], Word* head){
+    while(head) {
+        if(strcmp(head->name, first_field) == 0){
+            return -1;
+        }
+        head = head->next;
+    }
+    return 0;
+}
+
 /* Function to free language words */
 void freeLanguage(Word* current){
     Word* temp = NULL;
-    while (current != NULL) {
+    while (current) {
         temp = current;
         current = current->next;
         free(temp);

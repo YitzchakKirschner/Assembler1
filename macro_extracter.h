@@ -1,4 +1,4 @@
-
+#include "saved_words.h"
 #define MAX_LINE_LENGTH 1024
 #define MAX_MACRO_NAME_LENGTH 100
 #define MAX_MACRO_LINES 100
@@ -14,7 +14,7 @@ typedef struct MacroNode {
 
 
 /* Prototype functions */
-FILE* extractMacros(FILE* as_file_ptr, char* file_name);
+FILE* extractMacros(FILE* as_file_ptr, char* file_name, Word* head);
 int isMcrOrEndmcr(const char *line);
 MacroNode* findMacro(MacroNode *head, const char *name);
 void addLineToMacro(MacroNode *macro, const char *line);

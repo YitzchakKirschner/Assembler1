@@ -17,3 +17,4 @@ typedef struct Word {
 Word* createWord(char name[], int code, char src_reg_type[], char dst_reg_type[]);
 Word* defineLanguage();
 void freeLanguage(Word* head);
+int isSavedWord(char first_field[], Word* head);
