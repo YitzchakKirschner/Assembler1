@@ -35,7 +35,7 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name){
        If the line is not macro related then copy to output file. */
     while (fgets(line, MAX_LINE_LENGTH, as_file_ptr)) {
         if (in_macro_flag) {
-            if (isMcrOrEndmcr(line)) {/*Check for endmcr*/
+            if (isEndmcr(line)) {/*Check for endmcr*/
                 in_macro_flag = 0;
                 continue; /* No need to add to macro .am file */
             } else {
@@ -54,7 +54,7 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name){
             for (i = 0; i < foundMacro->line_count; i++) {
                 fputs(foundMacro->lines[i], am_file_ptr);
             }
-        } else if (isMcrOrEndmcr(line)) {/*Macro definition*/
+        } else if (isMcr(line)) {/*Macro definition*/
             in_macro_flag = 1;
             getFirstWord(line + 4, first_field); /* set first_field to line + 4 skips "mcr " */
             current_macro = addMacro(&macros, first_field); /* Add the macro with the name of first_field*/
@@ -134,4 +134,14 @@ void getFirstWord(const char *line, char *firstWord) {
 
     /* Null-terminate the first word */
     firstWord[j] = '\0';
+}
+
+/* wrap isMcrOrEndmcr for readability*/
+int isMcr(const char* line){
+    return isMcrOrEndmcr(line);
+}
+
+/* wrap isMcrOrEndmcr for readability*/
+int isEndmcr(const char* line){
+    return isMcrOrEndmcr(line);
 }
