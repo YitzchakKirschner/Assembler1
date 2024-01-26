@@ -1,5 +1,5 @@
 Hello world, whats up
-mcr 1
+mcr add
 AAAAAAAAAAAAAA
 BBBBBBBBBBBBBB
 endmcr

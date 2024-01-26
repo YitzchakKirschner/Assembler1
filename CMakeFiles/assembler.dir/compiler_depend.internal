@@ -57,6 +57,12 @@ CMakeFiles/assembler.dir/errors.c.o
  /usr/include/alloca.h
  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h
  /home/yitzchok/Desktop/Assembler1/errors.h
+ /usr/include/errno.h
+ /usr/include/x86_64-linux-gnu/bits/errno.h
+ /usr/include/linux/errno.h
+ /usr/include/x86_64-linux-gnu/asm/errno.h
+ /usr/include/asm-generic/errno.h
+ /usr/include/asm-generic/errno-base.h
 
 CMakeFiles/assembler.dir/macro_extracter.c.o
  /home/yitzchok/Desktop/Assembler1/macro_extracter.c
