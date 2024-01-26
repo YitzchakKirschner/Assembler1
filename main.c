@@ -35,7 +35,7 @@ int main(int argc, char* argv[]){
         }
 
         /* Pointer to file after macro extraction */
-        am_file_ptr = extractMacros(as_file_ptr, argv[i], head);
+        am_file_ptr = getAmFile(as_file_ptr, argv[i], head);
         if (!am_file_ptr){/* Error, no file returned*/
             fclose(as_file_ptr);
             freeLanguage(head);

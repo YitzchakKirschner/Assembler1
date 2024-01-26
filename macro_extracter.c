@@ -4,16 +4,10 @@
 #include "macro_extracter.h"
 #include "errors.h"
 
-FILE* extractMacros(FILE* as_file_ptr, char* file_name, Word* head){
+FILE* getAmFile(FILE* as_file_ptr, char* file_name, Word* head){
     FILE *am_file_ptr;
     char am_file_name[MAX_FILE_NAME_LENGTH];
-    char line[MAX_LINE_LENGTH];
-    MacroNode *macros = NULL; /*List of macros*/
-    int in_macro_flag = 0;
-    MacroNode *foundMacro = NULL;
-    MacroNode *current_macro = NULL;
-    char first_field[MAX_MACRO_NAME_LENGTH];
-    int i; /*counter*/
+    int extraction_complete;
 
     /* Get file name and open file. */
     strcpy(am_file_name, file_name);
@@ -27,9 +21,25 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name, Word* head){
             return NULL;
         }
 
+    extraction_complete = extractMacros(as_file_ptr, am_file_ptr, head);
+
+    if(extraction_complete != 0)
+        return NULL;
+        
+    return am_file_ptr;
+}
     /* Loop line by line. if end or begining of macro, change flag.
        If the first word if the file is the name of a macro, replace with macro.
        If the line is not macro related then copy to output file. */
+int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, Word* head){
+    char line[MAX_LINE_LENGTH];
+    MacroNode *macros = NULL; /*List of macros*/
+    int in_macro_flag = 0;
+    MacroNode *foundMacro = NULL;
+    MacroNode *current_macro = NULL;
+    char first_field[MAX_MACRO_NAME_LENGTH];
+    int i; /*counter*/
+
     while (fgets(line, MAX_LINE_LENGTH, as_file_ptr)) {
         if (in_macro_flag) {
             if (isEndmcr(line)) {/*Check for endmcr*/
@@ -56,18 +66,16 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name, Word* head){
             getFirstWord(line + 4, first_field); /* set first_field to line + 4, skips "mcr " */
             if(isSavedWord(first_field, head) != 0){ /* Used a saved word to name a macro */
                 error_output(3);
-                return NULL;
+                return -1;
             }
             current_macro = addMacro(&macros, first_field); /* Add the macro with the name of first_field*/
-        } else {/* just a normal line */
+        } else {/* just a normal line, add to am file*/
             fputs(line, am_file_ptr);
         }
     }
-
     /* Free the linked list */
     freeMacros(macros);
-
-    return am_file_ptr;
+    return 0;
 }
 
 /*The function returns true if first word of line is "mcr" or "endmcr"*/
