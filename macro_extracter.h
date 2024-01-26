@@ -1,8 +1,10 @@
 #include "saved_words.h"
-#define MAX_LINE_LENGTH 1024
-#define MAX_MACRO_NAME_LENGTH 100
+#define MAX_LINE_LENGTH 82
+#define MAX_MACRO_NAME_LENGTH 80
 #define MAX_MACRO_LINES 100
 #define MAX_FILE_NAME_LENGTH 100
+/* macro to check if first num numbers in ptr, are str*/
+#define firstWord(ptr, str, num) (strncmp((ptr), (str), (num)) == 0)
 
 /* Macro linked list struct */
 typedef struct MacroNode {
@@ -22,3 +24,4 @@ MacroNode* addMacro(MacroNode **head, const char *name);
 void getFirstWord(const char *line, char *firstWord);
 int isMcr(const char* line);
 int isEndmcr(const char* line);
+void freeMacros(MacroNode *macros);

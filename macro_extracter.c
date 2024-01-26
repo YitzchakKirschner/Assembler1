@@ -4,10 +4,6 @@
 #include "macro_extracter.h"
 #include "errors.h"
 
-
-/* macro to check if first num numbers in ptr, are str*/
-#define firstWord(ptr, str, num) (strncmp((ptr), (str), (num)) == 0)
-
 FILE* extractMacros(FILE* as_file_ptr, char* file_name, Word* head){
     FILE *am_file_ptr;
     char am_file_name[MAX_FILE_NAME_LENGTH];
@@ -16,7 +12,6 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name, Word* head){
     int in_macro_flag = 0;
     MacroNode *foundMacro = NULL;
     MacroNode *current_macro = NULL;
-    MacroNode *temp = NULL;
     char first_field[MAX_MACRO_NAME_LENGTH];
     int i; /*counter*/
 
@@ -70,11 +65,7 @@ FILE* extractMacros(FILE* as_file_ptr, char* file_name, Word* head){
     }
 
     /* Free the linked list */
-    while (macros) {
-        temp = macros;
-        macros = macros->next;
-        free(temp);
-    }
+    freeMacros(macros);
 
     return am_file_ptr;
 }
@@ -152,4 +143,13 @@ int isMcr(const char* line){
 /* wrap isMcrOrEndmcr for readability*/
 int isEndmcr(const char* line){
     return isMcrOrEndmcr(line);
+}
+
+void freeMacros(MacroNode *macros){
+    MacroNode* temp = NULL;
+    while (macros) {
+        temp = macros;
+        macros = macros->next;
+        free(temp);
+    }
 }
