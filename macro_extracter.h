@@ -1,5 +1,5 @@
 #include "saved_words.h"
-#define MAX_LINE_LENGTH 82
+#define MAX_LINE_LENGTH_PLUS_1 82
 #define MAX_MACRO_NAME_LENGTH 80
 #define MAX_MACRO_LINES 100
 #define MAX_FILE_NAME_LENGTH 100
@@ -9,7 +9,7 @@
 /* Macro linked list struct */
 typedef struct MacroNode {
     char name[MAX_MACRO_NAME_LENGTH];
-    char lines[MAX_MACRO_LINES][MAX_LINE_LENGTH];
+    char lines[MAX_MACRO_LINES][MAX_LINE_LENGTH_PLUS_1];
     int line_count;
     struct MacroNode *next;
 } MacroNode;
@@ -26,3 +26,4 @@ void getFirstWord(const char *line, char *firstWord);
 int isMcr(const char* line);
 int isEndmcr(const char* line);
 void freeMacros(MacroNode *macros);
+int validLineLength(char line[]);

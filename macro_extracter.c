@@ -25,14 +25,14 @@ FILE* getAmFile(FILE* as_file_ptr, char* file_name, Word* head){
 
     if(extraction_complete != 0)
         return NULL;
-        
+
     return am_file_ptr;
 }
     /* Loop line by line. if end or begining of macro, change flag.
        If the first word if the file is the name of a macro, replace with macro.
        If the line is not macro related then copy to output file. */
 int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, Word* head){
-    char line[MAX_LINE_LENGTH];
+    char line[MAX_LINE_LENGTH_PLUS_1 + 1];
     MacroNode *macros = NULL; /*List of macros*/
     int in_macro_flag = 0;
     MacroNode *foundMacro = NULL;
@@ -40,7 +40,13 @@ int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, Word* head){
     char first_field[MAX_MACRO_NAME_LENGTH];
     int i; /*counter*/
 
-    while (fgets(line, MAX_LINE_LENGTH, as_file_ptr)) {
+    while (fgets(line, MAX_LINE_LENGTH_PLUS_1 + 1, as_file_ptr)) {
+        /* Check if the line is longer then 81 chars (includes \n)*/
+        if(validLineLength(line) != 0){
+            error_output(5);
+            return -1;
+        }
+
         if (in_macro_flag) {
             if (isEndmcr(line)) {/*Check for endmcr*/
                 in_macro_flag = 0;
@@ -107,7 +113,7 @@ MacroNode* findMacro(MacroNode *head, const char *name) {
 /* adds the line to the macro and updates line_count */
 void addLineToMacro(MacroNode *macro, const char *line) {
     if (macro->line_count < MAX_MACRO_LINES) {
-        strncpy(macro->lines[macro->line_count++], line, MAX_LINE_LENGTH);
+        strncpy(macro->lines[macro->line_count++], line, MAX_LINE_LENGTH_PLUS_1);
     }
 }
 
@@ -160,4 +166,13 @@ void freeMacros(MacroNode *macros){
         macros = macros->next;
         free(temp);
     }
+}
+
+int validLineLength(char line[]){
+    int i;
+    for(i = 0; i < MAX_LINE_LENGTH_PLUS_1; i++){
+        if(line[i] == '\0')
+            return 0;
+    }
+    return -1;
 }

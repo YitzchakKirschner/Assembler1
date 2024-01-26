@@ -22,6 +22,10 @@ void error_output(int error_code){
         fprintf(stderr, "The memory allocation has failed, try correcting your malloc function");
         break;
 
+    case EXCEEDED_PERMISSIBLE_LENGTH:
+        fprintf(stderr, "At least on of the lines in the input file is longer then 80 charechters");
+        break;
+
     default:
         break;
     }
