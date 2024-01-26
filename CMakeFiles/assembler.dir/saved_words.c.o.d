@@ -50,4 +50,5 @@ CMakeFiles/assembler.dir/saved_words.c.o: \
  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h /usr/include/string.h \
  /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
- /usr/include/strings.h /home/yitzchok/Desktop/Assembler1/saved_words.h
+ /usr/include/strings.h /home/yitzchok/Desktop/Assembler1/saved_words.h \
+ /home/yitzchok/Desktop/Assembler1/errors.h

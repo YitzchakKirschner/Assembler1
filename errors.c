@@ -17,6 +17,10 @@ void error_output(int error_code){
         printf("The word you used to name your macro, is a seved word. Try using a different name.\n");
         break;
         
+    case FAILED_TO_ALLOCATE_MEMORY:
+        printf("The memory allocation has failed, try correcting your malloc function");
+        break;
+
     default:
         break;
     }

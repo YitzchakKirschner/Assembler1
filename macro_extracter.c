@@ -120,8 +120,10 @@ MacroNode* addMacro(MacroNode **head, const char *name) {
         newNode->line_count = 0;
         newNode->next = *head;
         *head = newNode;
+        return newNode;
     }
-    return newNode;
+    error_output(4);/* Failed to allocate memory */
+    return NULL;
 }
 
 

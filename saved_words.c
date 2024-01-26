@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "saved_words.h"
-
+#include "errors.h"
 
 Word* defineLanguage() {
     Word *head = NULL, *temp = NULL, *current = NULL;
@@ -41,20 +41,24 @@ Word* defineLanguage() {
 // Function to create a new Word
 Word* createWord(char name[], int code, char src_reg_type[], char dst_reg_type[]) {
     Word* newWord = (Word*)malloc(sizeof(Word));
-    strcpy(newWord->name, name);
-    newWord->code = code;
-    if(src_reg_type)
-        strcpy(newWord->src_reg_type, src_reg_type); 
-    else
-        newWord->src_reg_type[0] = '\0';
+    if(newWord){
+        strcpy(newWord->name, name);
+        newWord->code = code;
+        if(src_reg_type)
+            strcpy(newWord->src_reg_type, src_reg_type); 
+        else
+            newWord->src_reg_type[0] = '\0';
 
-    if(dst_reg_type)
-        strcpy(newWord->dst_reg_type, dst_reg_type); 
-    else
-        newWord->dst_reg_type[0] = '\0';
+        if(dst_reg_type)
+            strcpy(newWord->dst_reg_type, dst_reg_type); 
+        else
+            newWord->dst_reg_type[0] = '\0';
 
-    newWord->next = NULL;
-    return newWord;
+        newWord->next = NULL;
+        return newWord;
+    }
+    error_output(4);/* failed to allocate memory */
+    return NULL;
 }
 
 /* The function checks if first_field is a saved word */
