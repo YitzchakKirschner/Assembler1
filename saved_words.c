@@ -69,6 +69,10 @@ int isSavedWord(char first_field[], Word* head){
         }
         head = head->next;
     }
+
+    if(COMPARE_STRINGS(".data") || COMPARE_STRINGS(".entry") || COMPARE_STRINGS(".extern") || COMPARE_STRINGS(".string"))
+        return -1;
+
     return 0;
 }
 

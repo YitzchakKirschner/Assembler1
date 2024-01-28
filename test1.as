@@ -3,14 +3,14 @@ mcr 1
 AAAAAAAAAAAAAA
 BBBBBBBBBBBBBB
 endmcr
-mcr 2
+mcr .string
 CCCCCCCCCCCCC
 DDDDDDDDDDDD
 endmcr
 this is the first line of the file
 thsi is the second line ofthe file
 1
-2
+.string
 1
 1
 this is the third line of the file
