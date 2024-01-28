@@ -39,6 +39,7 @@ int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, Word* head){
     MacroNode *current_macro = NULL;
     char first_field[MAX_MACRO_NAME_LENGTH];
     int i; /*counter*/
+    Line *currentLine = NULL;
 
     while (fgets(line, MAX_LINE_LENGTH_PLUS_1 + 1, as_file_ptr)) {
         /* Check if the line is longer then 81 chars (includes \n)*/
@@ -63,11 +64,13 @@ int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, Word* head){
 	    /* If the first word in the line is a name of a macro, replace it with the macro */
         foundMacro = findMacro(macros, first_field);
         if (foundMacro) {
-            /* Replace macro with its lines*/
-            for (i = 0; i < foundMacro->line_count; i++) {
-                fputs(foundMacro->lines[i], am_file_ptr);
-            }
-        } else if (isMcr(line)) {/*Macro definition*/
+            /* Replace macro with its lines */
+            currentLine = foundMacro->lines;
+            while (currentLine != NULL) {
+                fputs(currentLine->text, am_file_ptr);
+                currentLine = currentLine->next;
+            } 
+        }else if (isMcr(line)) {/*Macro definition*/
             in_macro_flag = 1;
             getFirstWord(line + 4, first_field); /* set first_field to line + 4, skips "mcr " */
             if(isSavedWord(first_field, head) != 0){ /* Used a saved word to name a macro */
@@ -111,10 +114,26 @@ MacroNode* findMacro(MacroNode *head, const char *name) {
 }
 
 /* adds the line to the macro and updates line_count */
+
 void addLineToMacro(MacroNode *macro, const char *line) {
-    if (macro->line_count < MAX_MACRO_LINES) {
-        strncpy(macro->lines[macro->line_count++], line, MAX_LINE_LENGTH_PLUS_1);
+    Line *newLine = (Line *)malloc(sizeof(Line));
+    if (!newLine) { /* Handle memory allocation error*/
+        error_output(1);
+        return;
     }
+    strncpy(newLine->text, line, MAX_LINE_LENGTH_PLUS_1);
+    newLine->next = NULL;
+
+    if (macro->line_count == 0) {
+        macro->lines = newLine;
+    } else {
+        Line *current = macro->lines;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        current->next = newLine;
+    }
+    macro->line_count++;
 }
 
 
@@ -160,11 +179,17 @@ int isEndmcr(const char* line){
 }
 
 void freeMacros(MacroNode *macros){
-    MacroNode* temp = NULL;
-    while (macros) {
-        temp = macros;
+    MacroNode *tempMacro;
+    while (macros != NULL) {
+        Line *line = macros->lines;
+        while (line != NULL) {
+            Line *tempLine = line;
+            line = line->next;
+            free(tempLine);
+        }
+        tempMacro = macros;
         macros = macros->next;
-        free(temp);
+        free(tempMacro);
     }
 }
 

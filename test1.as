@@ -6,7 +6,6 @@ endmcr
 mcr 2
 CCCCCCCCCCCCC
 DDDDDDDDDDDD
-.....................................................................................................................................................................................................
 endmcr
 this is the first line of the file
 thsi is the second line ofthe file

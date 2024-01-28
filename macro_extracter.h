@@ -6,10 +6,16 @@
 /* macro to check if first num numbers in ptr, are str*/
 #define firstWord(ptr, str, num) (strncmp((ptr), (str), (num)) == 0)
 
+/* Line struct definition */
+typedef struct Line {
+    char text[MAX_LINE_LENGTH_PLUS_1];
+    struct Line *next;
+} Line;
+
 /* Macro linked list struct */
 typedef struct MacroNode {
     char name[MAX_MACRO_NAME_LENGTH];
-    char lines[MAX_MACRO_LINES][MAX_LINE_LENGTH_PLUS_1];
+    Line *lines;  /* Pointer to the first line*/
     int line_count;
     struct MacroNode *next;
 } MacroNode;
