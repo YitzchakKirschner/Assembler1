@@ -17,7 +17,7 @@ int main(int argc, char* argv[]){
     if(argc < 2){
         error_output(1);
         freeLanguage(head);
-        return -1;
+        return 0;
     }
 
     /* Open the files one by one and verify the given file exists in folder */
@@ -31,7 +31,7 @@ int main(int argc, char* argv[]){
             error_output(2);
             fclose(as_file_ptr);
             freeLanguage(head);
-            return -1;
+            return 0;
         }
 
         /* Pointer to file after macro extraction */
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]){
         if (!am_file_ptr){/* Error, no file returned*/
             fclose(as_file_ptr);
             freeLanguage(head);
-            return -1;
+            return 0;
         }
         /* Close the .as and .am files */
         fclose(as_file_ptr);

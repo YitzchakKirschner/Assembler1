@@ -121,6 +121,7 @@ CMakeFiles/assembler.dir/macro_extracter.c.o: macro_extracter.c \
   /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
   /usr/include/strings.h \
+  /usr/include/ctype.h \
   macro_extracter.h \
   saved_words.h \
   errors.h
@@ -280,6 +281,8 @@ macro_extracter.c:
 /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h:
 
 /usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
+
+/usr/include/ctype.h:
 
 /usr/include/x86_64-linux-gnu/bits/uintn-identity.h:
 

@@ -25,15 +25,6 @@ Word* defineLanguage() {
     CREATE_AND_LINK(temp, current, "jsr", 13, NULL, "13");
     CREATE_AND_LINK(temp, current, "rts", 14, NULL, NULL);
     CREATE_AND_LINK(temp, current, "hlt", 15, NULL, NULL);
-        
-
-    /* Display the list */
-    current = head;
-    while (current != NULL) {
-        printf("Name: %s, Code: %d, Src: %s, Dst: %s\n",
-               current->name, current->code, current->src_reg_type, current->dst_reg_type);
-        current = current->next;
-    }
 
     return head;
 }
@@ -65,15 +56,15 @@ Word* createWord(char name[], int code, char src_reg_type[], char dst_reg_type[]
 int isSavedWord(char first_field[], Word* head){
     while(head) {
         if(strcmp(head->name, first_field) == 0){
-            return -1;
+            return 1;
         }
         head = head->next;
     }
 
     if(COMPARE_STRINGS(".data") || COMPARE_STRINGS(".entry") || COMPARE_STRINGS(".extern") || COMPARE_STRINGS(".string"))
-        return -1;
+        return 1;
 
-    return 0;
+    return 0; /* Not a saved word*/
 }
 
 /* Function to free language words */

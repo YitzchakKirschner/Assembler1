@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "macro_extracter.h"
 #include "errors.h"
 
@@ -23,7 +24,7 @@ FILE* getAmFile(FILE* as_file_ptr, char* file_name, Word* head){
 
     extraction_complete = extractMacros(as_file_ptr, am_file_ptr, head);
 
-    if(extraction_complete != 0)
+    if(extraction_complete)
         return NULL;
 
     return am_file_ptr;
@@ -43,9 +44,13 @@ int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, Word* head){
 
     while (fgets(line, MAX_LINE_LENGTH_PLUS_1 + 1, as_file_ptr)) {
         /* Check if the line is longer then 81 chars (includes \n)*/
-        if(validLineLength(line) != 0){
+        if(!validLineLength(line)){
             error_output(5);
-            return -1;
+            return 0;
+        }
+
+        if(isSemicolon(line)){/* Is the line a comment line?*/
+            continue; /* Go to next line*/
         }
 
         if (in_macro_flag) {
@@ -73,9 +78,9 @@ int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, Word* head){
         }else if (isMcr(line)) {/*Macro definition*/
             in_macro_flag = 1;
             getFirstWord(line + 4, first_field); /* set first_field to line + 4, skips "mcr " */
-            if(isSavedWord(first_field, head) != 0){ /* Used a saved word to name a macro */
+            if(isSavedWord(first_field, head)){ /* Used a saved word to name a macro */
                 error_output(3);
-                return -1;
+                return 0;
             }
             current_macro = addMacro(&macros, first_field); /* Add the macro with the name of first_field*/
         } else {/* just a normal line, add to am file*/
@@ -84,7 +89,7 @@ int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, Word* head){
     }
     /* Free the linked list */
     freeMacros(macros);
-    return 0;
+    return 1;
 }
 
 /*The function returns true if first word of line is "mcr" or "endmcr"*/
@@ -118,7 +123,7 @@ MacroNode* findMacro(MacroNode *head, const char *name) {
 void addLineToMacro(MacroNode *macro, const char *line) {
     Line *newLine = (Line *)malloc(sizeof(Line));
     if (!newLine) { /* Handle memory allocation error*/
-        error_output(1);
+        error_output(4);
         return;
     }
     strncpy(newLine->text, line, MAX_LINE_LENGTH_PLUS_1);
@@ -197,7 +202,18 @@ int validLineLength(char line[]){
     int i;
     for(i = 0; i < MAX_LINE_LENGTH_PLUS_1; i++){
         if(line[i] == '\0')
-            return 0;
+            return 1;
     }
-    return -1;
+    return 0;
+}
+
+int isSemicolon(const char *line) {
+    /* Iterate through each character in the string */
+    while (*line != '\0') {
+        if (!isspace((unsigned char)*line)) {  /* Check if the character is not a whitespace*/
+            return *line == ';';  /* Return true if it's a semicolon, false otherwise */
+        }
+        line++;  /* Move to the next character */
+    }
+    return 1;  /* Return true if only whitespace characters are found. unnecessary line */
 }

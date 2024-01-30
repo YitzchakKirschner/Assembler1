@@ -33,3 +33,4 @@ int isMcr(const char* line);
 int isEndmcr(const char* line);
 void freeMacros(MacroNode *macros);
 int validLineLength(char line[]);
+int isSemicolon(const char *line);
