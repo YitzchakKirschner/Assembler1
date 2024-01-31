@@ -5,7 +5,7 @@
 #include "macro_extracter.h"
 #include "errors.h"
 
-FILE* getAmFile(FILE* as_file_ptr, char* file_name, Word* head){
+FILE* getAmFile(FILE* as_file_ptr, char* file_name){
     FILE *am_file_ptr;
     char am_file_name[MAX_FILE_NAME_LENGTH];
     int extraction_complete;
@@ -22,7 +22,7 @@ FILE* getAmFile(FILE* as_file_ptr, char* file_name, Word* head){
             return NULL;
         }
 
-    extraction_complete = extractMacros(as_file_ptr, am_file_ptr, head);
+    extraction_complete = extractMacros(as_file_ptr, am_file_ptr);
 
     if(extraction_complete)
         return NULL;
@@ -32,7 +32,7 @@ FILE* getAmFile(FILE* as_file_ptr, char* file_name, Word* head){
     /* Loop line by line. if end or begining of macro, change flag.
        If the first word if the file is the name of a macro, replace with macro.
        If the line is not macro related then copy to output file. */
-int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, Word* head){
+int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr){
     char line[MAX_LINE_LENGTH_PLUS_1 + 1];
     MacroNode *macros = NULL; /*List of macros*/
     int in_macro_flag = 0;
@@ -57,7 +57,7 @@ int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, Word* head){
             if (isEndmcr(line)) {/*Check for endmcr*/
                 in_macro_flag = 0;
                 continue; /* No need to add to macro .am file */
-            } else {
+            } else {    
                 addLineToMacro(current_macro, line);
                 continue; /* No need to add to macro .am file */
             }
@@ -78,7 +78,7 @@ int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, Word* head){
         }else if (isMcr(line)) {/*Macro definition*/
             in_macro_flag = 1;
             getFirstWord(line + 4, first_field); /* set first_field to line + 4, skips "mcr " */
-            if(isSavedWord(first_field, head)){ /* Used a saved word to name a macro */
+            if(isSavedWord(first_field)){ /* Used a saved word to name a macro */
                 error_output(3);
                 return 0;
             }
@@ -108,12 +108,12 @@ int isMcrOrEndmcr (const char* line){
 }
 
 /* returns the macro of the first word in the line if exsists */
-MacroNode* findMacro(MacroNode *head, const char *name) {
-    while (head) {
-        if (strcmp(head->name, name) == 0) {
-            return head;
+MacroNode* findMacro(MacroNode *macroHead, const char *name) {
+    while (macroHead) {
+        if (!strcmp(macroHead->name, name)) {
+            return macroHead;
         }
-        head = head->next;/* Search next MacroNode in list*/
+        macroHead = macroHead->next;/* Search next MacroNode in list*/
     }
     return NULL;/* Not a macro name */
 }

@@ -4,32 +4,34 @@
 #include "saved_words.h"
 #include "errors.h"
 
+Word *head = NULL;
+
 Word* defineLanguage() {
-    Word *head = NULL, *temp = NULL, *current = NULL;
+    Word *temp = NULL, *current = NULL;
     /* Create and link the Words*/
     temp = createWord("mov", 0, "0123", "123");
     head = temp;
     current = temp;
-    CREATE_AND_LINK(temp, current, "cmp", 1, "0123", "0123");
-    CREATE_AND_LINK(temp, current, "add", 2, "0123", "123");
-    CREATE_AND_LINK(temp, current, "sub", 3, "0123", "123");
-    CREATE_AND_LINK(temp, current, "not", 4, NULL, "123");
-    CREATE_AND_LINK(temp, current, "clr", 5, NULL, "123");
-    CREATE_AND_LINK(temp, current, "lea", 6, "12", "123");
-    CREATE_AND_LINK(temp, current, "inc", 7, NULL, "123");
-    CREATE_AND_LINK(temp, current, "dec", 8, NULL, "123");
-    CREATE_AND_LINK(temp, current, "jmp", 9, NULL, "13");
-    CREATE_AND_LINK(temp, current, "bne", 10, NULL, "13");
-    CREATE_AND_LINK(temp, current, "red", 11, NULL, "123");
-    CREATE_AND_LINK(temp, current, "prn", 12, NULL, "0123");
-    CREATE_AND_LINK(temp, current, "jsr", 13, NULL, "13");
-    CREATE_AND_LINK(temp, current, "rts", 14, NULL, NULL);
-    CREATE_AND_LINK(temp, current, "hlt", 15, NULL, NULL);
+    CREATE_AND_LINK("cmp", 1, "0123", "0123");
+    CREATE_AND_LINK("add", 2, "0123", "123");
+    CREATE_AND_LINK("sub", 3, "0123", "123");
+    CREATE_AND_LINK("not", 4, NULL, "123");
+    CREATE_AND_LINK("clr", 5, NULL, "123");
+    CREATE_AND_LINK("lea", 6, "12", "123");
+    CREATE_AND_LINK("inc", 7, NULL, "123");
+    CREATE_AND_LINK("dec", 8, NULL, "123");
+    CREATE_AND_LINK("jmp", 9, NULL, "13");
+    CREATE_AND_LINK("bne", 10, NULL, "13");
+    CREATE_AND_LINK("red", 11, NULL, "123");
+    CREATE_AND_LINK("prn", 12, NULL, "0123");
+    CREATE_AND_LINK("jsr", 13, NULL, "13");
+    CREATE_AND_LINK("rts", 14, NULL, NULL);
+    CREATE_AND_LINK("hlt", 15, NULL, NULL);
 
     return head;
 }
 
-// Function to create a new Word
+/*Function to create a new Word*/
 Word* createWord(char name[], int code, char src_reg_type[], char dst_reg_type[]) {
     Word* newWord = (Word*)malloc(sizeof(Word));
     if(newWord){
@@ -53,12 +55,13 @@ Word* createWord(char name[], int code, char src_reg_type[], char dst_reg_type[]
 }
 
 /* The function checks if first_field is a saved word */
-int isSavedWord(char first_field[], Word* head){
-    while(head) {
-        if(strcmp(head->name, first_field) == 0){
+int isSavedWord(char first_field[]){
+    Word* temp = head;
+    while(temp) {
+        if(strcmp(temp->name, first_field) == 0){
             return 1;
         }
-        head = head->next;
+        temp = temp->next;
     }
 
     if(COMPARE_STRINGS(".data") || COMPARE_STRINGS(".entry") || COMPARE_STRINGS(".extern") || COMPARE_STRINGS(".string"))

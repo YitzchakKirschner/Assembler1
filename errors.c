@@ -26,6 +26,14 @@ void error_output(int error_code){
         fprintf(stderr, "At least on of the lines in the input file is longer then 80 charechters");
         break;
 
+    case DEFINE_SYNTAX_ERROR:
+        fprintf(stderr, "You've got a syntax error in one of your define statments\nMake sure your format is as follows: .define string = number");
+        break;
+
+    case NAME_IS_DUPLICATE:
+        fprintf(stderr, "The name you've chosen for one of you tags or define statments is a duplicate");
+        break;
+        
     default:
         break;
     }

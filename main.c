@@ -10,8 +10,9 @@ int main(int argc, char* argv[]){
     int i; /* Counter */
     FILE* as_file_ptr;
     FILE* am_file_ptr;
+    FILE* object_file_ptr;
     char as_file_name[MAX_FILE_NAME_LENGTH];
-    Word* head = defineLanguage(); /* Create our insturction set*/
+    defineLanguage(); /* Create our insturction set*/
 
     /* Verify recipe of file name in argv */
     if(argc < 2){
@@ -35,7 +36,7 @@ int main(int argc, char* argv[]){
         }
 
         /* Pointer to file after macro extraction */
-        am_file_ptr = getAmFile(as_file_ptr, argv[i], head);
+        am_file_ptr = getAmFile(as_file_ptr, argv[i]);
         if (!am_file_ptr){/* Error, no file returned*/
             fclose(as_file_ptr);
             freeLanguage(head);

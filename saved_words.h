@@ -7,11 +7,13 @@ typedef struct Word {
     struct Word* next;
 } Word;
 
+extern Word *head;
+
 /* Macro to compare first_field of a macro with any other given string*/
 #define COMPARE_STRINGS(input_string) (strcmp((first_field), (input_string)) == 0)
 
 /* Macro to create a saved word*/
-#define CREATE_AND_LINK(temp, current, name, word, src_reg_type, dst_reg_type) \
+#define CREATE_AND_LINK(name, word, src_reg_type, dst_reg_type) \
     do { \
         temp = createWord(name, word, src_reg_type, dst_reg_type); \
         current->next = temp; \
@@ -22,4 +24,4 @@ typedef struct Word {
 Word* createWord(char name[], int code, char src_reg_type[], char dst_reg_type[]);
 Word* defineLanguage();
 void freeLanguage(Word* head);
-int isSavedWord(char first_field[], Word* head);
+int isSavedWord(char first_field[]);
