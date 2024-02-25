@@ -11,8 +11,6 @@
 int IC = 0; /* Instruction Count */
 int DC = 0; /* Data Count */
 
-
-
 /* Finalized Main Assembler Algorithm Function */
 void assemblerAlgorithm(FILE *sourceFile, Symbol **symbolTable, int *IC, int *DC) {
     char line[MAX_LINE_LENGTH_PLUS_1], firstWord[MAX_MACRO_NAME_LENGTH];
@@ -39,7 +37,7 @@ void assemblerAlgorithm(FILE *sourceFile, Symbol **symbolTable, int *IC, int *DC
 
 /* Main Assembler Algorithm Functions */
 FILE* firstRun(FILE* as_file_ptr, char* file_name, Word* head){
-    Symbol *symbolTable = NULL; // Head of the symbol table
+    Symbol **symbolTable = NULL; // Head of the symbol table
     FILE *output_file_ptr;
     char output_file_name[MAX_FILE_NAME_LENGTH];
     char line[MAX_LINE_LENGTH_PLUS_1], first_word[MAX_MACRO_NAME_LENGTH];
@@ -47,7 +45,7 @@ FILE* firstRun(FILE* as_file_ptr, char* file_name, Word* head){
     /* Get file name and open file. */
     strcpy(output_file_name, file_name);
     strcat(output_file_name, ".output"); /* Add "output" to the end of the file name */
-    ourpur_file_ptr = fopen(output_file_name, "w");
+    output_file_ptr = fopen(output_file_name, "w");
 
     /* Confirm file opening. */
     if (!output_file_ptr){
@@ -62,6 +60,7 @@ FILE* firstRun(FILE* as_file_ptr, char* file_name, Word* head){
         if (strcmp(firstWord, ".define") == 0) {
             processDefineStatement(line, symbolTable);
         }
+    }
 }
 
 
@@ -80,11 +79,27 @@ void processDefineStatement(char *line, Symbol **symbolTable) {
             error_output(7);
             break;
         }
-
     }
-    
-    // Implementation will be added here
+    insertIntoSymbolTable(symbolTable, current_symbol, name, value, MDEFINE);
 }
+
+/* Helper Function to Insert into Symbol Table */
+int insertIntoSymbolTable(Symbol **symbolTable, Symbol *current_symbol, char *name, int value, int type) {
+    
+
+    // Create a new symbol
+    current_symbol = (Symbol *)malloc(sizeof(Symbol));
+    if (!current_symbol) {
+        error_output(FAILED_TO_ALLOCATE_MEMORY);
+        return 0; // Memory allocation failed
+    }
+    strcpy(current_symbol->name, name);
+    current_symbol->value = value;
+    current_symbol->type = type;
+    current_symbol->next = NULL;
+    return 1; // Successfully inserted
+}
+
 
 /* Function to Process Data Directives */
 void processDataDirectives(char *line, Symbol **symbolTable) {
@@ -100,41 +115,6 @@ void processCodeDirectives(char *line, Symbol **symbolTable) {
 
 // More functions and their implementations will be added here
 
-
-/* Helper Function to Insert into Symbol Table */
-int insertIntoSymbolTable(Symbol **symbolTable, char *name, int value, int type) {
-    Symbol *newSymbol, *current;
-    
-    // Check if the symbol already exists in the table
-    for (current = *symbolTable; current != NULL; current = current->next) {
-        if (strcmp(current->name, name) == 0) {
-            return 0; // Symbol already exists
-        }
-    }
-
-    // Create a new symbol
-    newSymbol = (Symbol *)malloc(sizeof(Symbol));
-    if (!newSymbol) {
-        error_output(FAILED_TO_ALLOCATE_MEMORY);
-        return -1; // Memory allocation failed
-    }
-    strcpy(newSymbol->name, name);
-    newSymbol->value = value;
-    newSymbol->type = type;
-    newSymbol->next = *symbolTable;
-    *symbolTable = newSymbol;
-    return 1; // Successfully inserted
-}
-
-/* Detailed Implementation of processDefineStatement */
-void processDefineStatement(char *line, Symbol **symbolTable) {
-    char name[MAX_MACRO_NAME_LENGTH];
-    int value;
-    sscanf(line, "define %s %d", name, &value);
-    if (!insertIntoSymbolTable(symbolTable, name, value, MDEFINE)) {
-        error_output(USED_SAVED_WORD); // Symbol already exists
-    }
-}
 
 /* Detailed Implementation of processDataDirectives */
 void processDataDirectives(char *line, Symbol **symbolTable, int *DC) {
