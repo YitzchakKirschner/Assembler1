@@ -8,18 +8,11 @@ typedef struct Symbol {
 
 extern int IC;
 extern int DC;
+extern Symbol **symbolTable; // Head of the symbol table
 
 FILE* firstRun(FILE* as_file_ptr, char* file_name);
 void processDefineStatement(char *line, Symbol **symbolTable);
 void processDataDirectives(char *line, Symbol **symbolTable);
 void processCodeDirectives(char *line, Symbol **symbolTable);
-int insertIntoSymbolTable(Symbol **symbolTable, char *name, int value, int type);
-void processDefineStatement(char *line, Symbol **symbolTable);
-void processDataDirectives(char *line, Symbol **symbolTable, int *DC);
-void processCodeDirectives(char *line, Symbol **symbolTable, int *IC);
-int insertIntoSymbolTable(Symbol **symbolTable, char *name, int value, int type);
-void processDefineStatement(char *line, Symbol **symbolTable) ;
-void processDataDirectives(char *line, Symbol **symbolTable, int *DC);
-void processCodeDirectives(char *line, Symbol **symbolTable, int *IC);
-void processDataDirectives(char *line, Symbol **symbolTable, int *DC);
-void processCodeDirectives(char *line, Symbol **symbolTable, int *IC);
+int insertIntoSymbolTable(Symbol *current_symbol, char *name, int value, int type);
+void freeSymbolTable(Symbol **symbolTable);

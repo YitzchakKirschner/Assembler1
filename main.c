@@ -3,6 +3,7 @@
 #include <string.h>
 #include "macro_extracter.h"
 #include "errors.h"
+#include "first_run.h"
 
 
 
@@ -11,6 +12,7 @@ int main(int argc, char* argv[]){
     FILE* as_file_ptr;
     FILE* am_file_ptr;
     FILE* object_file_ptr;
+    FILE* output_file_ptr;
     char as_file_name[MAX_FILE_NAME_LENGTH];
     defineLanguage(); /* Create our insturction set*/
 
@@ -42,12 +44,21 @@ int main(int argc, char* argv[]){
             freeLanguage(head);
             return 0;
         }
+
+        output_file_ptr = firstRun(as_file_ptr, argv[i]);
+        if (!output_file_ptr){/* Error, no file returned*/
+            fclose(output_file_ptr);
+            freeSymbolTable(symbolTable);
+            return 0;
+        }
         /* Close the .as and .am files */
         fclose(as_file_ptr);
         fclose(am_file_ptr);
+        fclose(output_file_ptr);
     }
 
     freeLanguage(head);
+    freeSymbolTable(symbolTable);
 
     return 0;
 }

@@ -186,7 +186,8 @@ CMakeFiles/assembler.dir/main.c.o: main.c \
   /usr/include/strings.h \
   macro_extracter.h \
   saved_words.h \
-  errors.h
+  errors.h \
+  first_run.h
 
 CMakeFiles/assembler.dir/saved_words.c.o: saved_words.c \
   /usr/include/stdc-predef.h \
@@ -251,6 +252,8 @@ CMakeFiles/assembler.dir/saved_words.c.o: saved_words.c \
 
 
 saved_words.c:
+
+first_run.h:
 
 saved_words.h:
 
