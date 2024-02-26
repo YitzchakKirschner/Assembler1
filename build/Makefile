@@ -153,6 +153,30 @@ errors.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/assembler.dir/build.make CMakeFiles/assembler.dir/errors.c.s
 .PHONY : errors.c.s
 
+first_run.o: first_run.c.o
+.PHONY : first_run.o
+
+# target to build an object file
+first_run.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/assembler.dir/build.make CMakeFiles/assembler.dir/first_run.c.o
+.PHONY : first_run.c.o
+
+first_run.i: first_run.c.i
+.PHONY : first_run.i
+
+# target to preprocess a source file
+first_run.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/assembler.dir/build.make CMakeFiles/assembler.dir/first_run.c.i
+.PHONY : first_run.c.i
+
+first_run.s: first_run.c.s
+.PHONY : first_run.s
+
+# target to generate assembly for a file
+first_run.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/assembler.dir/build.make CMakeFiles/assembler.dir/first_run.c.s
+.PHONY : first_run.c.s
+
 macro_extracter.o: macro_extracter.c.o
 .PHONY : macro_extracter.o
 
@@ -237,6 +261,9 @@ help:
 	@echo "... errors.o"
 	@echo "... errors.i"
 	@echo "... errors.s"
+	@echo "... first_run.o"
+	@echo "... first_run.i"
+	@echo "... first_run.s"
 	@echo "... macro_extracter.o"
 	@echo "... macro_extracter.i"
 	@echo "... macro_extracter.s"

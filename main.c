@@ -13,6 +13,7 @@ int main(int argc, char* argv[]){
     FILE* am_file_ptr;
     FILE* object_file_ptr;
     FILE* output_file_ptr;
+    Symbol **symbolTable = NULL;
     char as_file_name[MAX_FILE_NAME_LENGTH];
     defineLanguage(); /* Create our insturction set*/
 
@@ -45,7 +46,7 @@ int main(int argc, char* argv[]){
             return 0;
         }
 
-        output_file_ptr = firstRun(as_file_ptr, argv[i]);
+        output_file_ptr = firstRun(as_file_ptr, argv[i], symbolTable);
         if (!output_file_ptr){/* Error, no file returned*/
             fclose(output_file_ptr);
             freeSymbolTable(symbolTable);

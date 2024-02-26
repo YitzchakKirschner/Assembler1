@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "macro_extracter.h"
-#include "saved_words.h"
 #include "errors.h"
 #include "first_run.h"
 
@@ -15,9 +14,8 @@ int DC = 0; /* Data Count */
 
 
 /* Main Assembler Algorithm Functions */
-FILE* firstRun(FILE* as_file_ptr, char* file_name){
+FILE* firstRun(FILE* as_file_ptr, char* file_name, Symbol **symbolTable){
     FILE *output_file_ptr;
-    Symbol **symbolTable = NULL;
     char output_file_name[MAX_FILE_NAME_LENGTH];
     char line[MAX_LINE_LENGTH_PLUS_1], first_word[MAX_MACRO_NAME_LENGTH];
 
@@ -32,11 +30,11 @@ FILE* firstRun(FILE* as_file_ptr, char* file_name){
         return NULL;
     }
 
-    while (fgets(line, MAX_LINE_LENGTH_PLUS_1 + 1, output_file_ptr)) {
+    while (fgets(line, MAX_LINE_LENGTH_PLUS_1, output_file_ptr)) {
         /* Store the first word in the line into first_field, skip any amount of spaces or tabs*/
         getFirstWord(line, first_word);
-        if (firstWord[0] == '\0') continue; /* End of file */
-        if (strcmp(firstWord, ".define") == 0) {
+        if (first_word[0] == '\0') continue; /* End of file */
+        if (strcmp(first_word, ".define") == 0) {
             processDefineStatement(line, symbolTable);
         }
     }
@@ -141,7 +139,7 @@ void freeSymbolTable(Symbol **symbolTable){
     Symbol *tempSymbol;
     while (*symbolTable != NULL) {
         tempSymbol = *symbolTable;
-        *symbolTable = *symbolTable->next;
+        *symbolTable = (*symbolTable)->next;
         free(tempSymbol);
     }
 }

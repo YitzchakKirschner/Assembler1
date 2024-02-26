@@ -1,1 +1,1 @@
-/usr/bin/gcc -g -rdynamic CMakeFiles/assembler.dir/main.c.o CMakeFiles/assembler.dir/macro_extracter.c.o CMakeFiles/assembler.dir/errors.c.o CMakeFiles/assembler.dir/saved_words.c.o -o assembler 
+/usr/bin/gcc -g -rdynamic CMakeFiles/assembler.dir/main.c.o CMakeFiles/assembler.dir/macro_extracter.c.o CMakeFiles/assembler.dir/errors.c.o CMakeFiles/assembler.dir/saved_words.c.o CMakeFiles/assembler.dir/first_run.c.o -o assembler 

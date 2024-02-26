@@ -1,6 +1,8 @@
 file(REMOVE_RECURSE
   "CMakeFiles/assembler.dir/errors.c.o"
   "CMakeFiles/assembler.dir/errors.c.o.d"
+  "CMakeFiles/assembler.dir/first_run.c.o"
+  "CMakeFiles/assembler.dir/first_run.c.o.d"
   "CMakeFiles/assembler.dir/macro_extracter.c.o"
   "CMakeFiles/assembler.dir/macro_extracter.c.o.d"
   "CMakeFiles/assembler.dir/main.c.o"
