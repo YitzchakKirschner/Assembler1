@@ -13,7 +13,7 @@ int main(int argc, char* argv[]){
     FILE* am_file_ptr;
     FILE* object_file_ptr;
     FILE* output_file_ptr;
-    Symbol **symbolTable = NULL;
+    Symbol *symbolTable = NULL;
     char as_file_name[MAX_FILE_NAME_LENGTH];
     defineLanguage(); /* Create our insturction set*/
 
@@ -41,6 +41,7 @@ int main(int argc, char* argv[]){
         /* Pointer to file after macro extraction */
         am_file_ptr = getAmFile(as_file_ptr, argv[i]);
         if (!am_file_ptr){/* Error, no file returned*/
+            error_output(2);
             fclose(as_file_ptr);
             freeLanguage(head);
             return 0;
@@ -48,6 +49,7 @@ int main(int argc, char* argv[]){
 
         output_file_ptr = firstRun(as_file_ptr, argv[i], symbolTable);
         if (!output_file_ptr){/* Error, no file returned*/
+            error_output(2);
             fclose(output_file_ptr);
             freeSymbolTable(symbolTable);
             return 0;

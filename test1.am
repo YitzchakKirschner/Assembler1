@@ -1,8 +1,9 @@
-Hello world, whats up
+hello 
 this is the first line of the file
 thsi is the second line ofthe file
 AAAAAAAAAAAAAA
 BBBBBBBBBBBBBB
+.define len = 4
 CCCCCCCCCCCCC
 DDDDDDDDDDDD
 AAAAAAAAAAAAAA

@@ -1,4 +1,4 @@
-Hello world, whats up
+hello 
 mcr 1
 AAAAAAAAAAAAAA
 BBBBBBBBBBBBBB
@@ -10,6 +10,7 @@ endmcr
 this is the first line of the file
 thsi is the second line ofthe file
 1
+.define len = 4
 2
 1
 1

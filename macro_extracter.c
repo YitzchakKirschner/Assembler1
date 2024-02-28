@@ -24,7 +24,7 @@ FILE* getAmFile(FILE* as_file_ptr, char* file_name){
 
     extraction_complete = extractMacros(as_file_ptr, am_file_ptr);
 
-    if(extraction_complete)
+    if(!extraction_complete)
         return NULL;
 
     return am_file_ptr;
