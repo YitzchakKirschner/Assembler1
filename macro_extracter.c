@@ -13,7 +13,7 @@ FILE* getAmFile(FILE* as_file_ptr, char* file_name){
     /* Get file name and open file. */
     strcpy(am_file_name, file_name);
     strcat(am_file_name, ".am"); /* Add "as" to the end of the file name and increment the argv ptr*/
-    am_file_ptr = fopen(am_file_name, "w");
+    am_file_ptr = fopen(am_file_name, "w+");
 
     /* Confirm file opening. */
     if (!am_file_ptr){

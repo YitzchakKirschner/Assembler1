@@ -8,13 +8,8 @@
 
 #define MAX_TAG_LENGTH 31
 
-/* Global Variables */
-int IC = 0; /* Instruction Count */
-int DC = 0; /* Data Count */
-
-
 /* Main Assembler Algorithm Functions */
-FILE* firstRun(FILE* as_file_ptr, char* file_name, Symbol *symbolTable){
+FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol *symbolTable, int IC, int DC){
     FILE *output_file_ptr;
     char output_file_name[MAX_FILE_NAME_LENGTH];
     char line[MAX_LINE_LENGTH_PLUS_1], first_word[MAX_MACRO_NAME_LENGTH];
@@ -22,18 +17,21 @@ FILE* firstRun(FILE* as_file_ptr, char* file_name, Symbol *symbolTable){
     /* Get file name and open file. */
     strcpy(output_file_name, file_name);
     strcat(output_file_name, ".output"); /* Add "output" to the end of the file name */
-    output_file_ptr = fopen(output_file_name, "w");
+    output_file_ptr = fopen(output_file_name, "w+");
 
     /* Confirm file opening. */
     if (!output_file_ptr){
         error_output(2);
         return NULL;
     }
+    
+    rewind(am_file_ptr);
 
-    while (fgets(line, MAX_LINE_LENGTH_PLUS_1, output_file_ptr)) {
+    while (fgets(line, MAX_LINE_LENGTH_PLUS_1, am_file_ptr)) {
         /* Store the first word in the line into first_field, skip any amount of spaces or tabs*/
         getFirstWord(line, first_word);
-        if (first_word[0] == '\0') continue; /* End of file */
+        if (first_word[0] == '\0') 
+            return output_file_ptr; /* End of file */
         if (strcmp(first_word, ".define") == 0) {
             processDefineStatement(line, symbolTable);
         }
@@ -56,27 +54,24 @@ void processDefineStatement(char *line, Symbol *symbolTable) {
     while(current_symbol){
         if(!strcmp(current_symbol->name, name)){
             error_output(7);
-            break;
         }
     }
     insertIntoSymbolTable(current_symbol, name, value, MDEFINE);
 }
 
 /* Helper Function to Insert into Symbol Table */
-int insertIntoSymbolTable(Symbol *current_symbol, char *name, int value, int type) {
+void insertIntoSymbolTable(Symbol *current_symbol, char *name, int value, int type) {
     
 
     // Create a new symbol
     current_symbol = (Symbol *)malloc(sizeof(Symbol));
     if (!current_symbol) {
         error_output(FAILED_TO_ALLOCATE_MEMORY);
-        return 0; // Memory allocation failed
     }
     strcpy(current_symbol->name, name);
     current_symbol->value = value;
     current_symbol->type = type;
     current_symbol->next = NULL;
-    return 1; // Successfully inserted
 }
 
 /*

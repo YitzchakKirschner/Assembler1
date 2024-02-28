@@ -14,6 +14,8 @@ int main(int argc, char* argv[]){
     FILE* object_file_ptr;
     FILE* output_file_ptr;
     Symbol *symbolTable = NULL;
+    int IC; /* Instruction Count */
+    int DC; /* Data Count */
     char as_file_name[MAX_FILE_NAME_LENGTH];
     defineLanguage(); /* Create our insturction set*/
 
@@ -26,6 +28,9 @@ int main(int argc, char* argv[]){
 
     /* Open the files one by one and verify the given file exists in folder */
     for(i=1; i<argc; i++){
+        IC = 0;
+        DC = 0;
+
         strcpy(as_file_name, argv[i]);
         strcat(as_file_name, ".as"); /* Add "as" to the end of the file name and increment the argv ptr*/
         as_file_ptr = fopen(as_file_name, "r");
@@ -47,7 +52,7 @@ int main(int argc, char* argv[]){
             return 0;
         }
 
-        output_file_ptr = firstRun(as_file_ptr, argv[i], symbolTable);
+        output_file_ptr = firstRun(am_file_ptr, argv[i], symbolTable, IC, DC);
         if (!output_file_ptr){/* Error, no file returned*/
             error_output(2);
             fclose(output_file_ptr);
@@ -58,10 +63,10 @@ int main(int argc, char* argv[]){
         fclose(as_file_ptr);
         fclose(am_file_ptr);
         fclose(output_file_ptr);
+        freeSymbolTable(symbolTable);
     }
 
     freeLanguage(head);
-    freeSymbolTable(symbolTable);
 
     return 0;
 }
