@@ -121,6 +121,7 @@ CMakeFiles/assembler.dir/first_run.c.o: first_run.c \
   /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
   /usr/include/strings.h \
+  /usr/include/ctype.h \
   macro_extracter.h \
   saved_words.h \
   errors.h \

@@ -10,6 +10,7 @@ endmcr
 this is the first line of the file
 thsi is the second line ofthe file
 1
+.define test = 5
 .define len = 4
 2
 1
@@ -17,3 +18,6 @@ thsi is the second line ofthe file
 this is the third line of the file
 kjhkjgjhk
 ,jhkgkfhkgfhg
+mcr test
+testing
+endmcr

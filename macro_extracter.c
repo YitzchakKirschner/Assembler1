@@ -5,7 +5,7 @@
 #include "macro_extracter.h"
 #include "errors.h"
 
-FILE* getAmFile(FILE* as_file_ptr, char* file_name){
+FILE* getAmFile(FILE* as_file_ptr, char* file_name, MacroNode* macros){
     FILE *am_file_ptr;
     char am_file_name[MAX_FILE_NAME_LENGTH];
     int extraction_complete;
@@ -22,7 +22,7 @@ FILE* getAmFile(FILE* as_file_ptr, char* file_name){
             return NULL;
         }
 
-    extraction_complete = extractMacros(as_file_ptr, am_file_ptr);
+    extraction_complete = extractMacros(as_file_ptr, am_file_ptr, macros);
 
     if(!extraction_complete)
         return NULL;
@@ -32,9 +32,8 @@ FILE* getAmFile(FILE* as_file_ptr, char* file_name){
     /* Loop line by line. if end or begining of macro, change flag.
        If the first word if the file is the name of a macro, replace with macro.
        If the line is not macro related then copy to output file. */
-int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr){
+int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, MacroNode* macros){
     char line[MAX_LINE_LENGTH_PLUS_1 + 1];
-    MacroNode *macros = NULL; /*List of macros*/
     int in_macro_flag = 0;
     MacroNode *foundMacro = NULL;
     MacroNode *current_macro = NULL;
@@ -109,11 +108,12 @@ int isMcrOrEndmcr (const char* line){
 
 /* returns the macro of the first word in the line if exsists */
 MacroNode* findMacro(MacroNode *macroHead, const char *name) {
-    while (macroHead) {
-        if (!strcmp(macroHead->name, name)) {
-            return macroHead;
+    MacroNode *tempMacro = macroHead;
+    while (tempMacro) {
+        if (!strcmp(tempMacro->name, name)) {
+            return tempMacro;
         }
-        macroHead = macroHead->next;/* Search next MacroNode in list*/
+        tempMacro = tempMacro->next;/* Search next MacroNode in list*/
     }
     return NULL;/* Not a macro name */
 }

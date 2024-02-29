@@ -22,8 +22,8 @@ typedef struct MacroNode {
 
 
 /* Prototype functions */
-FILE* getAmFile(FILE* as_file_ptr, char* file_name);
-int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr);
+FILE* getAmFile(FILE* as_file_ptr, char* file_name, MacroNode* macros);
+int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, MacroNode* macros);
 int isMcrOrEndmcr(const char *line);
 MacroNode* findMacro(MacroNode *head, const char *name);
 void addLineToMacro(MacroNode *macro, const char *line);
@@ -34,3 +34,4 @@ int isEndmcr(const char* line);
 void freeMacros(MacroNode *macros);
 int validLineLength(char line[]);
 int isSemicolon(const char *line);
+

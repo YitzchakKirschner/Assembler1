@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "macro_extracter.h"
 #include "errors.h"
 #include "first_run.h"
@@ -9,10 +10,11 @@
 #define MAX_TAG_LENGTH 31
 
 /* Main Assembler Algorithm Functions */
-FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol *symbolTable, int IC, int DC){
+FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol *symbolTable, MacroNode* macros, int IC, int DC){
     FILE *output_file_ptr;
     char output_file_name[MAX_FILE_NAME_LENGTH];
     char line[MAX_LINE_LENGTH_PLUS_1], first_word[MAX_MACRO_NAME_LENGTH];
+    int tag_flag = 0;
 
     /* Get file name and open file. */
     strcpy(output_file_name, file_name);
@@ -24,7 +26,7 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol *symbolTable, int IC, 
         error_output(2);
         return NULL;
     }
-    
+
     rewind(am_file_ptr);
 
     while (fgets(line, MAX_LINE_LENGTH_PLUS_1, am_file_ptr)) {
@@ -34,6 +36,8 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol *symbolTable, int IC, 
             return output_file_ptr; /* End of file */
         if (strcmp(first_word, ".define") == 0) {
             processDefineStatement(line, symbolTable);
+        } else if (isTag(first_word, macros)){
+            tag_flag = 1;
         }
     }
 
@@ -61,7 +65,6 @@ void processDefineStatement(char *line, Symbol *symbolTable) {
 
 /* Helper Function to Insert into Symbol Table */
 void insertIntoSymbolTable(Symbol *current_symbol, char *name, int value, int type) {
-    
 
     // Create a new symbol
     current_symbol = (Symbol *)malloc(sizeof(Symbol));
@@ -72,6 +75,45 @@ void insertIntoSymbolTable(Symbol *current_symbol, char *name, int value, int ty
     current_symbol->value = value;
     current_symbol->type = type;
     current_symbol->next = NULL;
+}
+
+int isTag(char* word, MacroNode* macros){
+    int len = strlen(word);
+    char tag[len - 1];
+    int i;
+
+    for(i = 0; i <= strlen(tag); i++){
+        tag[i] = word[i];
+    }
+
+    // Check if word length is less than 32
+    if (len >= 33 || len <= 1) {
+        return 0;
+    }
+
+    // Check if first character is alphabetic
+    if (!isalpha(word[0])) {
+        return 0;
+    }
+
+    // Check if last character is ':'
+    if (word[len - 1] != ':') {
+        return 0;
+    }
+
+    if (findMacro(macros, tag)){
+        printf("ERROR");
+        return 0;
+    }
+
+    // Check if remaining characters are alphanumeric
+    for (int i = 1; i < len; i++) {
+        if (!isalnum(word[i])) {
+            return 0;
+        }
+    }
+
+    return 1;
 }
 
 /*
