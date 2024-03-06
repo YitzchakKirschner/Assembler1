@@ -22,12 +22,12 @@ typedef struct MacroNode {
 
 
 /* Prototype functions */
-FILE* getAmFile(FILE* as_file_ptr, char* file_name, MacroNode* macros);
-int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, MacroNode* macros);
+FILE* getAmFile(FILE* as_file_ptr, char* file_name, MacroNode** macros);
+int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, MacroNode** macros);
 int isMcrOrEndmcr(const char *line);
 MacroNode* findMacro(MacroNode *head, const char *name);
 void addLineToMacro(MacroNode *macro, const char *line);
-MacroNode* addMacro(MacroNode **head, const char *name);
+MacroNode** addMacro(MacroNode** head, const char *name);
 void getFirstWord(const char *line, char *firstWord);
 int isMcr(const char* line);
 int isEndmcr(const char* line);

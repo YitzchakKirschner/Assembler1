@@ -10,7 +10,7 @@
 #define MAX_TAG_LENGTH 31
 
 /* Main Assembler Algorithm Functions */
-FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol *symbolTable, MacroNode* macros, int IC, int DC){
+FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol *symbolTable, MacroNode* macro_head, int IC, int DC){
     FILE *output_file_ptr;
     char output_file_name[MAX_FILE_NAME_LENGTH];
     char line[MAX_LINE_LENGTH_PLUS_1], first_word[MAX_MACRO_NAME_LENGTH];
@@ -36,7 +36,7 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol *symbolTable, MacroNod
             return output_file_ptr; /* End of file */
         if (strcmp(first_word, ".define") == 0) {
             processDefineStatement(line, symbolTable);
-        } else if (isTag(first_word, macros)){
+        } else if (isTag(first_word, macro_head)) {
             tag_flag = 1;
         }
     }
@@ -79,12 +79,13 @@ void insertIntoSymbolTable(Symbol *current_symbol, char *name, int value, int ty
 
 int isTag(char* word, MacroNode* macros){
     int len = strlen(word);
-    char tag[len - 1];
+    char tag[len];
     int i;
 
-    for(i = 0; i <= strlen(tag); i++){
+    for(i = 0; i < len -1; i++){
         tag[i] = word[i];
     }
+    tag[i] = '\0';
 
     // Check if word length is less than 32
     if (len >= 33 || len <= 1) {

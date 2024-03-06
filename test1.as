@@ -1,9 +1,9 @@
-hello 
+hello: 
 mcr 1
 AAAAAAAAAAAAAA
 BBBBBBBBBBBBBB
 endmcr
-mcr 2
+mcr hello
 CCCCCCCCCCCCC
 DDDDDDDDDDDD
 endmcr
@@ -12,7 +12,7 @@ thsi is the second line ofthe file
 1
 .define test = 5
 .define len = 4
-2
+hello
 1
 1
 this is the third line of the file

@@ -5,7 +5,7 @@
 #include "macro_extracter.h"
 #include "errors.h"
 
-FILE* getAmFile(FILE* as_file_ptr, char* file_name, MacroNode* macros){
+FILE* getAmFile(FILE* as_file_ptr, char* file_name, MacroNode** macro_head){
     FILE *am_file_ptr;
     char am_file_name[MAX_FILE_NAME_LENGTH];
     int extraction_complete;
@@ -22,7 +22,7 @@ FILE* getAmFile(FILE* as_file_ptr, char* file_name, MacroNode* macros){
             return NULL;
         }
 
-    extraction_complete = extractMacros(as_file_ptr, am_file_ptr, macros);
+    extraction_complete = extractMacros(as_file_ptr, am_file_ptr, macro_head);
 
     if(!extraction_complete)
         return NULL;
@@ -32,11 +32,10 @@ FILE* getAmFile(FILE* as_file_ptr, char* file_name, MacroNode* macros){
     /* Loop line by line. if end or begining of macro, change flag.
        If the first word if the file is the name of a macro, replace with macro.
        If the line is not macro related then copy to output file. */
-int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, MacroNode* macros){
+int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, MacroNode** macro_head){
     char line[MAX_LINE_LENGTH_PLUS_1 + 1];
     int in_macro_flag = 0;
     MacroNode *foundMacro = NULL;
-    MacroNode *current_macro = NULL;
     char first_field[MAX_MACRO_NAME_LENGTH];
     int i; /*counter*/
     Line *currentLine = NULL;
@@ -57,7 +56,7 @@ int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, MacroNode* macros){
                 in_macro_flag = 0;
                 continue; /* No need to add to macro .am file */
             } else {    
-                addLineToMacro(current_macro, line);
+                addLineToMacro(*macro_head, line);
                 continue; /* No need to add to macro .am file */
             }
         }
@@ -66,7 +65,8 @@ int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, MacroNode* macros){
         getFirstWord(line, first_field);
 
 	    /* If the first word in the line is a name of a macro, replace it with the macro */
-        foundMacro = findMacro(macros, first_field);
+        if(macro_head != NULL)
+            foundMacro = findMacro(*macro_head, first_field);
         if (foundMacro) {
             /* Replace macro with its lines */
             currentLine = foundMacro->lines;
@@ -81,13 +81,12 @@ int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, MacroNode* macros){
                 error_output(3);
                 return 0;
             }
-            current_macro = addMacro(&macros, first_field); /* Add the macro with the name of first_field*/
+            macro_head = addMacro(macro_head, first_field); /* Add the macro with the name of first_field*/
         } else {/* just a normal line, add to am file*/
             fputs(line, am_file_ptr);
         }
     }
-    /* Free the linked list */
-    freeMacros(macros);
+    
     return 1;
 }
 
@@ -142,14 +141,14 @@ void addLineToMacro(MacroNode *macro, const char *line) {
 }
 
 
-MacroNode* addMacro(MacroNode **head, const char *name) {
+MacroNode** addMacro(MacroNode **head, const char *name) {
     MacroNode *newNode = (MacroNode *)malloc(sizeof(MacroNode));
     if (newNode) {
         strncpy(newNode->name, name, MAX_MACRO_NAME_LENGTH);
         newNode->line_count = 0;
         newNode->next = *head;
         *head = newNode;
-        return newNode;
+        return head;
     }
     error_output(4);/* Failed to allocate memory */
     return NULL;

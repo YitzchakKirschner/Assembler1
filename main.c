@@ -13,7 +13,7 @@ int main(int argc, char* argv[]){
     FILE* am_file_ptr;
     FILE* object_file_ptr;
     FILE* output_file_ptr;
-    MacroNode *macros = NULL; /*List of macros*/
+    MacroNode **macro_head = (MacroNode **)malloc(sizeof(MacroNode)); /*List of macros*/
     Symbol *symbolTable = NULL;
     int IC; /* Instruction Count */
     int DC; /* Data Count */
@@ -45,7 +45,7 @@ int main(int argc, char* argv[]){
         }
 
         /* Pointer to file after macro extraction */
-        am_file_ptr = getAmFile(as_file_ptr, argv[i], macros);
+        am_file_ptr = getAmFile(as_file_ptr, argv[i], macro_head);
         if (!am_file_ptr){/* Error, no file returned*/
             error_output(2);
             fclose(as_file_ptr);
@@ -53,7 +53,7 @@ int main(int argc, char* argv[]){
             return 0;
         }
 
-        output_file_ptr = firstRun(am_file_ptr, argv[i], symbolTable, macros, IC, DC);
+        output_file_ptr = firstRun(am_file_ptr, argv[i], symbolTable, *macro_head, IC, DC);
         if (!output_file_ptr){/* Error, no file returned*/
             error_output(2);
             fclose(output_file_ptr);
@@ -64,6 +64,8 @@ int main(int argc, char* argv[]){
         fclose(as_file_ptr);
         fclose(am_file_ptr);
         fclose(output_file_ptr);
+        /* Free the linked list */
+        freeMacros(*macro_head);
         freeSymbolTable(symbolTable);
     }
 
