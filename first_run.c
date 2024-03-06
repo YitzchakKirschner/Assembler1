@@ -103,7 +103,7 @@ int isTag(char* word, MacroNode* macros){
     }
 
     if (findMacro(macros, tag)){
-        printf("ERROR");
+        printf("ERROR\n");
         return 0;
     }
 
