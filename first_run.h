@@ -9,10 +9,10 @@ typedef struct Symbol {
 extern int IC;
 extern int DC;
 
-FILE* firstRun(FILE* as_file_ptr, char* file_name, Symbol *symbolTable, MacroNode* macros, int IC, int DC);
-void processDefineStatement(char *line, Symbol *symbolTable);
-void processDataDirectives(char *line, Symbol *symbolTable);
-void processCodeDirectives(char *line, Symbol *symbolTable);
-void insertIntoSymbolTable(Symbol *current_symbol, char *name, int value, int type);
+FILE* firstRun(FILE* as_file_ptr, char* file_name, Symbol **symbolTable, MacroNode* macros, int IC, int DC);
+void processDefineStatement(char *line, Symbol **symbolTable);
+void processDataDirectives(char *line, Symbol **symbolTable);
+void processCodeDirectives(char *line, Symbol **symbolTable);
+void insertIntoSymbolTable(Symbol **current_symbol, char *name, int value, int type);
 void freeSymbolTable(Symbol *symbolTable);
 int isTag(char *word, MacroNode* macros);

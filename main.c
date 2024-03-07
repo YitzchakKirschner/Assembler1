@@ -14,7 +14,7 @@ int main(int argc, char* argv[]){
     FILE* object_file_ptr;
     FILE* output_file_ptr;
     MacroNode **macro_head = (MacroNode **)malloc(sizeof(MacroNode)); /*List of macros*/
-    Symbol *symbolTable = NULL;
+    Symbol **symbolTable = (Symbol **)malloc(sizeof(Symbol));
     int IC; /* Instruction Count */
     int DC; /* Data Count */
     char as_file_name[MAX_FILE_NAME_LENGTH];
@@ -57,7 +57,7 @@ int main(int argc, char* argv[]){
         if (!output_file_ptr){/* Error, no file returned*/
             error_output(2);
             fclose(output_file_ptr);
-            freeSymbolTable(symbolTable);
+            freeSymbolTable(*symbolTable);
             return 0;
         }
         /* Close the .as and .am files */
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]){
         fclose(output_file_ptr);
         /* Free the linked list */
         freeMacros(*macro_head);
-        freeSymbolTable(symbolTable);
+        freeSymbolTable(*symbolTable);
     }
 
     freeLanguage(head);

@@ -10,7 +10,7 @@
 #define MAX_TAG_LENGTH 31
 
 /* Main Assembler Algorithm Functions */
-FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol *symbolTable, MacroNode* macro_head, int IC, int DC){
+FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNode* macro_head, int IC, int DC){
     FILE *output_file_ptr;
     char output_file_name[MAX_FILE_NAME_LENGTH];
     char line[MAX_LINE_LENGTH_PLUS_1], first_word[MAX_MACRO_NAME_LENGTH];
@@ -46,35 +46,36 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol *symbolTable, MacroNod
 
 
 /* Function to Process 'define' Statements */
-void processDefineStatement(char *line, Symbol *symbolTable) {
+void processDefineStatement(char *line, Symbol **symbolTable) {
     char name[MAX_MACRO_NAME_LENGTH];
     int value;
-    Symbol* current_symbol = symbolTable;
+    Symbol** current_symbol = symbolTable;
     // Extract the name and value from the line
     if(sscanf(line, ".define %s = %d", name, &value) != 2)
         error_output(6);
     // Insert into symbol table with MDEFINE property
     /* check the name doesn't appear in the symbol table yet */
-    while(current_symbol){
-        if(!strcmp(current_symbol->name, name)){
+    while(*current_symbol){
+        if(!strcmp((*current_symbol)->name, name)){
             error_output(7);
         }
+        current_symbol = &(*current_symbol)->next;
     }
     insertIntoSymbolTable(current_symbol, name, value, MDEFINE);
 }
 
 /* Helper Function to Insert into Symbol Table */
-void insertIntoSymbolTable(Symbol *current_symbol, char *name, int value, int type) {
+void insertIntoSymbolTable(Symbol **current_symbol, char *name, int value, int type) {
 
     // Create a new symbol
-    current_symbol = (Symbol *)malloc(sizeof(Symbol));
-    if (!current_symbol) {
+    *current_symbol = (Symbol *)malloc(sizeof(Symbol));
+    if (!(*current_symbol)) {
         error_output(FAILED_TO_ALLOCATE_MEMORY);
     }
-    strcpy(current_symbol->name, name);
-    current_symbol->value = value;
-    current_symbol->type = type;
-    current_symbol->next = NULL;
+    strcpy((*current_symbol)->name, name);
+    (*current_symbol)->value = value;
+    (*current_symbol)->type = type;
+    (*current_symbol)->next = NULL;
 }
 
 int isTag(char* word, MacroNode* macros){
