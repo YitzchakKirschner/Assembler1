@@ -5,5 +5,6 @@
 #define EXCEEDED_PERMISSIBLE_LENGTH 5
 #define DEFINE_SYNTAX_ERROR 6
 #define NAME_IS_DUPLICATE 7
+#define USED_SAVED_WORD_AS_TAG 8
 
 void error_output(int error_code);

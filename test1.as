@@ -1,4 +1,4 @@
-hello: 
+mov: 
 mcr 1
 AAAAAAAAAAAAAA
 BBBBBBBBBBBBBB

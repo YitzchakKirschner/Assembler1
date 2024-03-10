@@ -33,6 +33,11 @@ void error_output(int error_code){
         fprintf(stderr, "The name you've chosen for one of your tags or define statements is a duplicate.\n");
         break;
 
+    case USED_SAVED_WORD_AS_TAG:
+        fprintf(stderr, "The tag you've chosen is a saved word or a name of a macro. Try using a different name.\n");
+        break;
+
+
     default:
         fprintf(stderr, "An unknown error occurred.\n");
         break;

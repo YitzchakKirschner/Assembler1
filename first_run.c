@@ -103,10 +103,10 @@ int isTag(char* word, MacroNode* macros){
         return 0;
     }
 
-    if (findMacro(macros, tag)){
-        printf("ERROR\n");
-        return 0;
+    if (findMacro(macros, tag) || isSavedWord(tag)){
+        error_output(8);
     }
+
 
     // Check if remaining characters are alphanumeric
     for (int i = 1; i < len; i++) {
