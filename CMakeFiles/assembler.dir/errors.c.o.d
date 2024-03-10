@@ -1,6 +1,6 @@
 CMakeFiles/assembler.dir/errors.c.o: \
  /home/yitzchok/Desktop/Assembler1/errors.c /usr/include/stdc-predef.h \
- /usr/include/stdio.h \
+ /home/yitzchok/Desktop/Assembler1/errors.h /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/features-time64.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
@@ -47,8 +47,4 @@ CMakeFiles/assembler.dir/errors.c.o: \
  /usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h \
  /usr/include/x86_64-linux-gnu/bits/struct_mutex.h \
  /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h /usr/include/alloca.h \
- /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
- /home/yitzchok/Desktop/Assembler1/errors.h /usr/include/errno.h \
- /usr/include/x86_64-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
- /usr/include/x86_64-linux-gnu/asm/errno.h \
- /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h
+ /usr/include/x86_64-linux-gnu/bits/stdlib-float.h
