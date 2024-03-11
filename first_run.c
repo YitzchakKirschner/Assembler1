@@ -13,7 +13,7 @@
 FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNode* macro_head, int IC, int DC){
     FILE *output_file_ptr;
     char output_file_name[MAX_FILE_NAME_LENGTH];
-    char line[MAX_LINE_LENGTH_PLUS_1], first_word[MAX_MACRO_NAME_LENGTH];
+    char line[MAX_LINE_LENGTH_PLUS_1], first_word[MAX_MACRO_NAME_LENGTH], second_word[MAX_MACRO_NAME_LENGTH];
     int tag_flag = 0;
 
     /* Get file name and open file. */
@@ -34,11 +34,37 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
         getFirstWord(line, first_word);
         if (first_word[0] == '\0') 
             return output_file_ptr; /* End of file */
+
         if (strcmp(first_word, ".define") == 0) {
             processDefineStatement(line, symbolTable);
-        } else if (isTag(first_word, macro_head)) {
-            tag_flag = 1;
+
         }
+        
+        if (isTag(first_word, macro_head)) {
+            tag_flag = 1;
+        } else {
+            tag_flag = 0;
+        }
+
+        /*make second word the first not-tag-word*/
+        if(!tag_flag){ 
+            strcpy(second_word, first_word);
+        } else {
+            getFirstWord(line + strlen(first_word), second_word);
+        }
+
+        if(strcmp(second_word, ".data") == 0){
+            processDataDirective(line, symbolTable, &DC, DATA_CODE, first_word, tag_flag);
+        } else if(strcmp(second_word, ".string") == 0){
+            processDataDirective(line, symbolTable, &DC, STRING_CODE, first_word, tag_flag);
+        } /*else if(strcmp(second_word, ".entry") == 0){
+            processCodeDirectives(line, symbolTable, &IC);
+        } else if(strcmp(second_word, ".extern") == 0){
+            processCodeDirectives(line, symbolTable, &IC);
+        } else {
+            processCodeDirectives(line, symbolTable, &IC);
+        }*/
+
     }
 
     return output_file_ptr;
@@ -62,6 +88,23 @@ void processDefineStatement(char *line, Symbol **symbolTable) {
         current_symbol = &(*current_symbol)->next;
     }
     insertIntoSymbolTable(current_symbol, name, value, MDEFINE);
+}
+
+void processDataDirective(char *line, Symbol **symbolTable, int *DC, int data_type, char* first_word, int tag_flag) {
+    Symbol** current_symbol = symbolTable;
+    if(tag_flag){
+    // Insert into symbol table with DATA property
+    /* check the name doesn't appear in the symbol table yet */
+        while(*current_symbol){
+            if(!strcmp((*current_symbol)->name, first_word)){
+                error_output(7);
+            }
+            current_symbol = &(*current_symbol)->next;
+        }
+        insertIntoSymbolTable(current_symbol, first_word, *DC, DATA);
+    }
+
+    (*DC)++;
 }
 
 /* Helper Function to Insert into Symbol Table */
@@ -109,7 +152,7 @@ int isTag(char* word, MacroNode* macros){
 
 
     // Check if remaining characters are alphanumeric
-    for (int i = 1; i < len; i++) {
+    for (int i = 1; i < len -1; i++) {
         if (!isalnum(word[i])) {
             return 0;
         }

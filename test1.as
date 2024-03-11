@@ -1,4 +1,4 @@
-mov: 
+tag: .data
 mcr 1
 AAAAAAAAAAAAAA
 BBBBBBBBBBBBBB
