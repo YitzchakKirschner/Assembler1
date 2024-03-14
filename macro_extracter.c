@@ -62,7 +62,7 @@ int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, MacroNode** macro_head){
         }
 
 	    /* Store the first word in the line into first_field, skip any amount of spaces or tabs*/
-        getFirstWord(line, first_field);
+        getWordAtIndex(line, first_field, 1);
 
 	    /* If the first word in the line is a name of a macro, replace it with the macro */
         if(macro_head != NULL)
@@ -76,7 +76,7 @@ int extractMacros(FILE* as_file_ptr, FILE* am_file_ptr, MacroNode** macro_head){
             } 
         }else if (isMcr(line)) {/*Macro definition*/
             in_macro_flag = 1;
-            getFirstWord(line + 4, first_field); /* set first_field to line + 4, skips "mcr " */
+            getWordAtIndex(line, first_field, 2); /* set first_field to line + 4, skips "mcr " */
             if(isSavedWord(first_field)){ /* Used a saved word to name a macro */
                 error_output(3);
                 return 0;
@@ -154,22 +154,46 @@ MacroNode** addMacro(MacroNode **head, const char *name) {
     return NULL;
 }
 
-
+/*
 void getFirstWord(const char *line, char *firstWord) {
     int i = 0, j = 0;
 
-    /* Skip leading whitespaces */
+    /* Skip leading whitespaces *
     while (line[i] == ' ' || line[i] == '\t') {
         i++;
     }
 
-    /* Capture the first word*/
+    /* Capture the first word*
     while (line[i] != '\0' && line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
         firstWord[j++] = line[i++];
     }
 
-    /* Null-terminate the first word */
+    /* Null-terminate the first word *
     firstWord[j] = '\0';
+}
+*/
+
+
+void getWordAtIndex(const char* line, char* output, int wordIndex) {
+    int i = 1;
+    char tempLine[82];  // Temporary line buffer
+    char* token;
+
+    // Copy line to tempLine so strtok doesn't modify original string
+    strcpy(tempLine, line);
+
+    // Get the first token
+    token = strtok(tempLine, " ");
+
+    // Walk through other tokens
+    while (token != NULL) {
+        if (i == wordIndex) {
+            strcpy(output, token);
+            break;
+        }
+        i++;
+        token = strtok(NULL, " ");
+    }
 }
 
 /* wrap isMcrOrEndmcr for readability*/

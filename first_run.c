@@ -31,7 +31,7 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
 
     while (fgets(line, MAX_LINE_LENGTH_PLUS_1, am_file_ptr)) {
         /* Store the first word in the line into first_field, skip any amount of spaces or tabs*/
-        getFirstWord(line, first_word);
+        getWordAtIndex(line, first_word, 1);
         if (first_word[0] == '\0') 
             return output_file_ptr; /* End of file */
 
@@ -50,13 +50,13 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
         if(!tag_flag){ 
             strcpy(second_word, first_word);
         } else {
-            getFirstWord(line + strlen(first_word), second_word);
+            getWordAtIndex(line, second_word, 2);
         }
 
         if(strcmp(second_word, ".data") == 0){
-            processDataDirective(line, symbolTable, &DC, DATA_CODE, first_word, tag_flag);
+            processDataDirective(line, symbolTable, output_file_ptr, &DC, DATA_CODE, first_word, tag_flag);
         } else if(strcmp(second_word, ".string") == 0){
-            processDataDirective(line, symbolTable, &DC, STRING_CODE, first_word, tag_flag);
+            processDataDirective(line, symbolTable, output_file_ptr, &DC, STRING_CODE, first_word, tag_flag);
         } /*else if(strcmp(second_word, ".entry") == 0){
             processCodeDirectives(line, symbolTable, &IC);
         } else if(strcmp(second_word, ".extern") == 0){
@@ -90,7 +90,8 @@ void processDefineStatement(char *line, Symbol **symbolTable) {
     insertIntoSymbolTable(current_symbol, name, value, MDEFINE);
 }
 
-void processDataDirective(char *line, Symbol **symbolTable, int *DC, int data_type, char* first_word, int tag_flag) {
+void processDataDirective(char *line, Symbol **symbolTable, FILE* output_file_ptr, int *DC, int data_type, char* first_word, int tag_flag) {
+    char command_name[MAX_MACRO_NAME_LENGTH];
     Symbol** current_symbol = symbolTable;
     if(tag_flag){
     // Insert into symbol table with DATA property
@@ -104,7 +105,12 @@ void processDataDirective(char *line, Symbol **symbolTable, int *DC, int data_ty
         insertIntoSymbolTable(current_symbol, first_word, *DC, DATA);
     }
 
-    (*DC)++;
+    if(data_type == DATA_CODE){  
+        writeBinaryNumbersToFile(output_file_ptr, strstr(line, ".data") + 5, DC);
+    }
+    else if(data_type == STRING_CODE){
+        writeAsciiBinaryToFile(output_file_ptr, strstr(line, ".string") + 7, DC);
+    }
 }
 
 /* Helper Function to Insert into Symbol Table */
@@ -159,6 +165,67 @@ int isTag(char* word, MacroNode* macros){
     }
 
     return 1;
+}
+
+void writeBinaryNumbersToFile(FILE* file, const char* numbers, int* DC) {
+    char tempNumbers[82];  // Temporary numbers buffer
+    char* token;
+
+    // Copy numbers to tempNumbers so strtok doesn't modify original string
+    strcpy(tempNumbers, numbers);
+
+    // Get the first token
+    token = strtok(tempNumbers, " ");
+
+    // Walk through other tokens
+    while (token != NULL) {
+        int number = atoi(token);  // Convert string to integer
+        char binary[15];  // Buffer to hold binary number
+
+        // Convert number to binary and store in binary buffer
+        for (int i = 13; i >= 0; i--) {
+            binary[i] = (number & 1) + '0';
+            number >>= 1;
+        }
+        binary[14] = '\0';  // Null-terminate the binary string
+
+        // Write binary number to file
+        fprintf(file, "%s\n", binary);
+
+        // Increment the data counter
+        (*DC)++;
+
+        token = strtok(NULL, " ");
+    }
+}
+
+void writeAsciiBinaryToFile(FILE* file, const char* str, int* DC) {
+    char tempStr[82];  // Temporary string buffer
+    char* token;
+
+    // Copy str to tempStr so strtok doesn't modify original string
+    strcpy(tempStr, str);
+
+    // Get the first token
+    token = strtok(tempStr, "\"");
+
+    for (int j = 0; j < strlen(token); j++) {
+        int asciiVal = token[j];  // Get ASCII value of character
+        char binary[15];  // Buffer to hold binary number
+
+        // Convert ASCII value to binary and store in binary buffer
+        for (int i = 13; i >= 0; i--) {
+            binary[i] = (asciiVal & 1) + '0';
+            asciiVal >>= 1;
+        }
+        binary[14] = '\0';  // Null-terminate the binary string
+
+        // Write binary number to file
+        fprintf(file, "%s\n", binary);
+
+        // Increment the data counter
+        (*DC)++;
+    }
 }
 
 /*

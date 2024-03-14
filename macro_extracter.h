@@ -28,10 +28,10 @@ int isMcrOrEndmcr(const char *line);
 MacroNode* findMacro(MacroNode *head, const char *name);
 void addLineToMacro(MacroNode *macro, const char *line);
 MacroNode** addMacro(MacroNode** head, const char *name);
-void getFirstWord(const char *line, char *firstWord);
+/*void getFirstWord(const char *line, char *firstWord);*/
 int isMcr(const char* line);
 int isEndmcr(const char* line);
 void freeMacros(MacroNode *macros);
 int validLineLength(char line[]);
 int isSemicolon(const char *line);
-
+void getWordAtIndex(const char* line, char* output, int wordIndex);
