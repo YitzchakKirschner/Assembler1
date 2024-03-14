@@ -1,4 +1,5 @@
-tag: .data
+tag: .data 2,3,1 ,   1
+.string "01234" 
 mcr 1
 AAAAAAAAAAAAAA
 BBBBBBBBBBBBBB

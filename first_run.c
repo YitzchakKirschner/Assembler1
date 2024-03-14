@@ -175,7 +175,7 @@ void writeBinaryNumbersToFile(FILE* file, const char* numbers, int* DC) {
     strcpy(tempNumbers, numbers);
 
     // Get the first token
-    token = strtok(tempNumbers, " ");
+    token = strtok(tempNumbers, ",");
 
     // Walk through other tokens
     while (token != NULL) {
@@ -195,13 +195,14 @@ void writeBinaryNumbersToFile(FILE* file, const char* numbers, int* DC) {
         // Increment the data counter
         (*DC)++;
 
-        token = strtok(NULL, " ");
+        token = strtok(NULL, ",");
     }
 }
 
 void writeAsciiBinaryToFile(FILE* file, const char* str, int* DC) {
     char tempStr[82];  // Temporary string buffer
     char* token;
+    int insideQuotes = 0;  // Flag to track whether we're inside quotes
 
     // Copy str to tempStr so strtok doesn't modify original string
     strcpy(tempStr, str);
@@ -209,25 +210,38 @@ void writeAsciiBinaryToFile(FILE* file, const char* str, int* DC) {
     // Get the first token
     token = strtok(tempStr, "\"");
 
-    for (int j = 0; j < strlen(token); j++) {
-        int asciiVal = token[j];  // Get ASCII value of character
-        char binary[15];  // Buffer to hold binary number
+    // Walk through other tokens
+    while (token != NULL) {
+        if (insideQuotes) {
+            for (int j = 0; j < strlen(token); j++) {
+                int asciiVal = token[j];  // Get ASCII value of character
+                char binary[15];  // Buffer to hold binary number
 
-        // Convert ASCII value to binary and store in binary buffer
-        for (int i = 13; i >= 0; i--) {
-            binary[i] = (asciiVal & 1) + '0';
-            asciiVal >>= 1;
+                // Convert ASCII value to binary and store in binary buffer
+                for (int i = 13; i >= 0; i--) {
+                    binary[i] = (asciiVal & 1) + '0';
+                    asciiVal >>= 1;
+                }
+                binary[14] = '\0';  // Null-terminate the binary string
+
+                // Write binary number to file
+                fprintf(file, "%s\n", binary);
+
+                // Increment the data counter
+                (*DC)++;
+            }
         }
-        binary[14] = '\0';  // Null-terminate the binary string
 
-        // Write binary number to file
-        fprintf(file, "%s\n", binary);
+        // Flip the insideQuotes flag
+        insideQuotes = !insideQuotes;
 
-        // Increment the data counter
-        (*DC)++;
+        token = strtok(NULL, "\"");
     }
-}
 
+    // Write a line of 14 zeros to the file
+    fprintf(file, "00000000000000\n");
+    (*DC)++;
+}
 /*
 /* Function to Process Data Directives *
 void processDataDirectives(char *line, Symbol *symbolTable) {
