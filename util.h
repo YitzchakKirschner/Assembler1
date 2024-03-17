@@ -1,0 +1,1 @@
+int countLinesInFile(FILE* file);

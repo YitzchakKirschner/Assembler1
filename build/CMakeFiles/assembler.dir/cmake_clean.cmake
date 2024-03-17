@@ -9,6 +9,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/assembler.dir/main.c.o.d"
   "CMakeFiles/assembler.dir/saved_words.c.o"
   "CMakeFiles/assembler.dir/saved_words.c.o.d"
+  "CMakeFiles/assembler.dir/util.c.o"
+  "CMakeFiles/assembler.dir/util.c.o.d"
   "assembler"
   "assembler.pdb"
 )

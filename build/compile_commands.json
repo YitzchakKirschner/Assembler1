@@ -23,5 +23,10 @@
   "directory": "/home/yitzchok/Desktop/Assembler1/build",
   "command": "/usr/bin/gcc   -g -o CMakeFiles/assembler.dir/first_run.c.o -c /home/yitzchok/Desktop/Assembler1/first_run.c",
   "file": "/home/yitzchok/Desktop/Assembler1/first_run.c"
+},
+{
+  "directory": "/home/yitzchok/Desktop/Assembler1/build",
+  "command": "/usr/bin/gcc   -g -o CMakeFiles/assembler.dir/util.c.o -c /home/yitzchok/Desktop/Assembler1/util.c",
+  "file": "/home/yitzchok/Desktop/Assembler1/util.c"
 }
 ]

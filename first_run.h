@@ -6,18 +6,33 @@ typedef struct Symbol {
     struct Symbol *next;              // Pointer to the next symbol
 } Symbol;
 
-extern int IC;
-extern int DC;
+/* Simple Data Structure */
+typedef struct OutputLines {
+    char data[16];          // Char array of 15 chars plus null terminator
+    int line_number;        // Line number
+    int is_used;            // Flag indicating if the data is used
+    struct OutputLines* next;    // Pointer to the next data structure
+} OutputLines;
+
+typedef struct DecodedLines{
+    int src_line_number;
+    int output_line_number;
+    int is_decoded;
+    struct DecodedLines* next;
+} DecodedLines;
+
+
 
 FILE* firstRun(FILE* as_file_ptr, char* file_name, Symbol **symbolTable, MacroNode* macros, int IC, int DC);
 void processDefineStatement(char *line, Symbol **symbolTable);
-void processDataDirective(char *line, Symbol **symbolTable, FILE *output_file_ptr, int *DC, int data_type, char* first_word, int tag_flag);
+void processDataDirective(char *line, Symbol **symbolTable, int *DC, int data_type, char* first_word, int tag_flag, char* data_segment);
 void processCodeDirectives(char *line, Symbol **symbolTable);
 void insertIntoSymbolTable(Symbol **current_symbol, char *name, int value, int type);
 void freeSymbolTable(Symbol *symbolTable);
 int isTag(char *word, MacroNode* macros);
-void writeBinaryNumbersToFile(FILE* file, const char* numbers, int* DC);
-void writeAsciiBinaryToFile(FILE* file, const char* str, int* DC);
-
+void writeBinaryNumbersToDataSegment(char* data_segment, const char* numbers, int* DC);
+void writeAsciiBinaryToDataSegment(char* data_segment, const char* str, int* DC);
+void freeOutputLines(OutputLines *output_lines);
+void freeDecodedLines(DecodedLines *decodedLines);
 #define DATA_CODE 1
 #define STRING_CODE 2

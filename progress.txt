@@ -1,0 +1,2 @@
+In first_run. want to change the DATA input to a data structure that gets an array of the output line, 
+instead of an array which is a concatenation of many other arrays.

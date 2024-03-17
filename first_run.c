@@ -6,15 +6,23 @@
 #include "macro_extracter.h"
 #include "errors.h"
 #include "first_run.h"
+#include "util.h"
 
 #define MAX_TAG_LENGTH 31
 
 /* Main Assembler Algorithm Functions */
 FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNode* macro_head, int IC, int DC){
     FILE *output_file_ptr;
+    //int file_length = countLinesInFile(am_file_ptr);
+    //int decoded_lines[file_length];
+    OutputLines** data_output = (OutputLines**)malloc(sizeof(OutputLines));
+    DecodedLines** decoded_lines = (DecodedLines**)malloc(sizeof(DecodedLines));
     char output_file_name[MAX_FILE_NAME_LENGTH];
+    char* instruction_segment;
+    char* data_segment;
     char line[MAX_LINE_LENGTH_PLUS_1], first_word[MAX_MACRO_NAME_LENGTH], second_word[MAX_MACRO_NAME_LENGTH];
     int tag_flag = 0;
+   
 
     /* Get file name and open file. */
     strcpy(output_file_name, file_name);
@@ -54,9 +62,9 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
         }
 
         if(strcmp(second_word, ".data") == 0){
-            processDataDirective(line, symbolTable, output_file_ptr, &DC, DATA_CODE, first_word, tag_flag);
+            processDataDirective(line, symbolTable, &DC, DATA_CODE, first_word, tag_flag, data_segment);
         } else if(strcmp(second_word, ".string") == 0){
-            processDataDirective(line, symbolTable, output_file_ptr, &DC, STRING_CODE, first_word, tag_flag);
+            processDataDirective(line, symbolTable, &DC, STRING_CODE, first_word, tag_flag, data_segment);
         } /*else if(strcmp(second_word, ".entry") == 0){
             processCodeDirectives(line, symbolTable, &IC);
         } else if(strcmp(second_word, ".extern") == 0){
@@ -66,6 +74,9 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
         }*/
 
     }
+
+    freeOutputLines(*data_output);
+    freeDecodedLines(*decoded_lines);
 
     return output_file_ptr;
 }
@@ -90,12 +101,12 @@ void processDefineStatement(char *line, Symbol **symbolTable) {
     insertIntoSymbolTable(current_symbol, name, value, MDEFINE);
 }
 
-void processDataDirective(char *line, Symbol **symbolTable, FILE* output_file_ptr, int *DC, int data_type, char* first_word, int tag_flag) {
+void processDataDirective(char *line, Symbol **symbolTable, int *DC, int data_type, char* first_word, int tag_flag, char* data_segment) {
     char command_name[MAX_MACRO_NAME_LENGTH];
     Symbol** current_symbol = symbolTable;
     if(tag_flag){
-    // Insert into symbol table with DATA property
-    /* check the name doesn't appear in the symbol table yet */
+        // Insert into symbol table with DATA property
+        /* check the name doesn't appear in the symbol table yet */
         while(*current_symbol){
             if(!strcmp((*current_symbol)->name, first_word)){
                 error_output(7);
@@ -106,10 +117,10 @@ void processDataDirective(char *line, Symbol **symbolTable, FILE* output_file_pt
     }
 
     if(data_type == DATA_CODE){  
-        writeBinaryNumbersToFile(output_file_ptr, strstr(line, ".data") + 5, DC);
+        writeBinaryNumbersToDataSegment(data_segment, strstr(line, ".data") + 5, DC);
     }
     else if(data_type == STRING_CODE){
-        writeAsciiBinaryToFile(output_file_ptr, strstr(line, ".string") + 7, DC);
+        writeAsciiBinaryToDataSegment(data_segment, strstr(line, ".string") + 7, DC);
     }
 }
 
@@ -167,7 +178,7 @@ int isTag(char* word, MacroNode* macros){
     return 1;
 }
 
-void writeBinaryNumbersToFile(FILE* file, const char* numbers, int* DC) {
+void writeBinaryNumbersToDataSegment(char* data_segment, const char* numbers, int* DC) {
     char tempNumbers[82];  // Temporary numbers buffer
     char* token;
 
@@ -189,8 +200,9 @@ void writeBinaryNumbersToFile(FILE* file, const char* numbers, int* DC) {
         }
         binary[14] = '\0';  // Null-terminate the binary string
 
-        // Write binary number to file
-        fprintf(file, "%s\n", binary);
+        // Concatenate binary number to the end of the array with a '\n' at the end
+        strcat(data_segment, binary);
+        strcat(data_segment, "\n");
 
         // Increment the data counter
         (*DC)++;
@@ -199,7 +211,7 @@ void writeBinaryNumbersToFile(FILE* file, const char* numbers, int* DC) {
     }
 }
 
-void writeAsciiBinaryToFile(FILE* file, const char* str, int* DC) {
+void writeAsciiBinaryToDataSegment(char* data_segment, const char* str, int* DC) {
     char tempStr[82];  // Temporary string buffer
     char* token;
     int insideQuotes = 0;  // Flag to track whether we're inside quotes
@@ -224,8 +236,9 @@ void writeAsciiBinaryToFile(FILE* file, const char* str, int* DC) {
                 }
                 binary[14] = '\0';  // Null-terminate the binary string
 
-                // Write binary number to file
-                fprintf(file, "%s\n", binary);
+                // Concatenate binary number to the end of the data_segment with a '\n' at the end
+                strcat(data_segment, binary);
+                strcat(data_segment, "\n");
 
                 // Increment the data counter
                 (*DC)++;
@@ -238,8 +251,8 @@ void writeAsciiBinaryToFile(FILE* file, const char* str, int* DC) {
         token = strtok(NULL, "\"");
     }
 
-    // Write a line of 14 zeros to the file
-    fprintf(file, "00000000000000\n");
+    // Concatenate a line of 14 zeros to the end of the data_segment
+    strcat(data_segment, "00000000000000\n");
     (*DC)++;
 }
 /*
@@ -311,4 +324,29 @@ void freeSymbolTable(Symbol *symbolTable) {
     }
 }
 
+void freeOutputLines(OutputLines *outputLines) {
+    if (outputLines == NULL) {
+        return;  // Output lines are already empty
+    }
+
+    OutputLines *tempOutputLine;
+    while (outputLines != NULL) {
+        tempOutputLine = outputLines;
+        outputLines = outputLines->next;  // Update head pointer correctly
+        free(tempOutputLine);
+    }
+}
+
+void freeDecodedLines(DecodedLines *decodedLines) {
+    if (decodedLines == NULL) {
+        return;  // Decoded lines are already empty
+    }
+
+    DecodedLines *tempDecodedLine;
+    while (decodedLines != NULL) {
+        tempDecodedLine = decodedLines;
+        decodedLines = decodedLines->next;  // Update head pointer correctly
+        free(tempDecodedLine);
+    }
+}
 // Additional supporting functions and logic can be added here/* Test Cases for Assembler Algorithm */#include <assert.h>/* Function to Test Symbol Table Insertion */void testSymbolTableInsertion() {    Symbol symbolTable = NULL;    assert(insertIntoSymbolTable(&symbolTable, "LABEL1", 100, DATA) == 1); // Successful insertion    assert(insertIntoSymbolTable(&symbolTable, "LABEL1", 100, DATA) == 0); // Duplicate symbol    // Add more test cases as needed}/* Function to Test Process Define Statement */void testProcessDefineStatement() {    Symbol symbolTable = NULL;    char line[] = "define PI 3";    processDefineStatement(line, &symbolTable);    // Add assertions to validate the symbol table contents    // Add more test cases as needed}/* Function to Test Process Data Directives */void testProcessDataDirectives() {    // Add test cases for processing .data and .string directives    // Validate the DC updates and symbol table contents}/* Function to Test Process Code Directives */void testProcessCodeDirectives() {    // Add test cases for processing .extern, .entry, and instruction lines    // Validate the IC updates and symbol table contents}/* Main Function to Run Tests */int main() {    testSymbolTableInsertion();    testProcessDefineStatement();    testProcessDataDirectives();    testProcessCodeDirectives();    printf("All tests passed successfully!\n");    return 0;}// Add more tests and final touches as needed/* Complete Logic of processDataDirectives */void processDataDirectives(char *line, Symbol *symbolTable, int *DC) {    char label[MAX_MACRO_NAME_LENGTH];    // Example condition to check for a label (this should be adjusted based on the actual file format)    if (sscanf(line, "%s", label) == 1) {        // Insert label into symbol table with DATA property        insertIntoSymbolTable(symbolTable, label, *DC, DATA);        // Update DC accordingly based on the data encoded        // Logic to encode data and update DC    }    // Additional logic for processing data directives}/* Complete Logic of processCodeDirectives */void processCodeDirectives(char *line, Symbol *symbolTable, int *IC) {    char label[MAX_MACRO_NAME_LENGTH];    // Example condition to check for a label (this should be adjusted based on the actual file format)    if (sscanf(line, "%s", label) == 1) {        // Insert label into symbol table with CODE property        insertIntoSymbolTable(symbolTable, label, *IC + 100, CODE);        // Update IC accordingly based on the instruction encoded        // Logic to encode instruction and update IC    }    // Additional logic for processing code directives}// Additional supporting functions and logic can be added here
