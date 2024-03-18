@@ -15,15 +15,15 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
     FILE *output_file_ptr;
     //int file_length = countLinesInFile(am_file_ptr);
     //int decoded_lines[file_length];
-    OutputLines** data_output = (OutputLines**)malloc(sizeof(OutputLines));
+    OutputLines** data_output_head = (OutputLines**)malloc(sizeof(OutputLines));
+    OutputLines** data_output = data_output_head;
     DecodedLines** decoded_lines = (DecodedLines**)malloc(sizeof(DecodedLines));
     DecodedLines** current_decoded_line = decoded_lines;
     char output_file_name[MAX_FILE_NAME_LENGTH];
-    char* instruction_segment;
-    char* data_segment;
     char line[MAX_LINE_LENGTH_PLUS_1], first_word[MAX_MACRO_NAME_LENGTH], second_word[MAX_MACRO_NAME_LENGTH];
-    int tag_flag = 0;
+    int output_line_number = 0;
     int src_line = 0;
+    int tag_flag = 0;
    
 
     /* Get file name and open file. */
@@ -46,8 +46,8 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
             return output_file_ptr; /* End of file */
 
         if (strcmp(first_word, ".define") == 0) {
+            addLineToDecodedLines(current_decoded_line, src_line, DC, 0);
             processDefineStatement(line, symbolTable);
-
         }
         
         if (isTag(first_word, macro_head)) {
@@ -65,10 +65,10 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
 
         if(strcmp(second_word, ".data") == 0){
             addLineToDecodedLines(current_decoded_line, src_line, DC, 0);
-            processDataDirective(line, symbolTable, &DC, &src_line, DATA_CODE, first_word, tag_flag, data_segment);
+            processDataDirective(line, symbolTable, &DC, &src_line, &output_line_number, DATA_CODE, first_word, tag_flag, data_output);
         } else if(strcmp(second_word, ".string") == 0){
             addLineToDecodedLines(current_decoded_line, src_line, DC, 0);
-            processDataDirective(line, symbolTable, &DC,&src_line, STRING_CODE, first_word, tag_flag, data_segment);
+            processDataDirective(line, symbolTable, &DC,&src_line, &output_line_number, STRING_CODE, first_word, tag_flag, data_output);
         } /*else if(strcmp(second_word, ".entry") == 0){
             processCodeDirectives(line, symbolTable, &IC);
         } else if(strcmp(second_word, ".extern") == 0){
@@ -107,7 +107,7 @@ void processDefineStatement(char *line, Symbol **symbolTable) {
     insertIntoSymbolTable(current_symbol, name, value, MDEFINE);
 }
 
-void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_line, int data_type, char* first_word, int tag_flag, char* data_segment) {
+void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_line, int* output_line_number, int data_type, char* first_word, int tag_flag, OutputLines** data_output) {
     char command_name[MAX_MACRO_NAME_LENGTH];
     Symbol** current_symbol = symbolTable;
     if(tag_flag){
@@ -123,10 +123,10 @@ void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_li
     }
 
     if(data_type == DATA_CODE){  
-        writeBinaryNumbersToDataSegment(data_segment, strstr(line, ".data") + 5, DC);
+        writeBinaryNumbersToDataSegment(data_output, strstr(line, ".data") + 5, DC, output_line_number);
     }
     else if(data_type == STRING_CODE){
-        writeAsciiBinaryToDataSegment(data_segment, strstr(line, ".string") + 7, DC);
+        writeAsciiBinaryToDataSegment(data_output, strstr(line, ".string") + 7, DC, output_line_number);
     }
 }
 
@@ -184,7 +184,7 @@ int isTag(char* word, MacroNode* macros){
     return 1;
 }
 
-void writeBinaryNumbersToDataSegment(char* data_segment, const char* numbers, int* DC) {
+void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numbers, int* DC, int* output_line_number) {
     char tempNumbers[82];  // Temporary numbers buffer
     char* token;
 
@@ -197,18 +197,24 @@ void writeBinaryNumbersToDataSegment(char* data_segment, const char* numbers, in
     // Walk through other tokens
     while (token != NULL) {
         int number = atoi(token);  // Convert string to integer
-        char binary[15];  // Buffer to hold binary number
+        char binary[16];  // Buffer to hold binary number
 
         // Convert number to binary and store in binary buffer
         for (int i = 13; i >= 0; i--) {
             binary[i] = (number & 1) + '0';
             number >>= 1;
         }
-        binary[14] = '\0';  // Null-terminate the binary string
+        binary[15] = '\n';  // Null-terminate the binary string
+        binary[16] = '\0';  // Null-terminate the binary string
 
-        // Concatenate binary number to the end of the array with a '\n' at the end
-        strcat(data_segment, binary);
-        strcat(data_segment, "\n");
+        (*data_output)->line_number = *output_line_number;
+        strcpy((*data_output)->data, binary);
+        (*data_output)->next = (OutputLines*)malloc(sizeof(OutputLines));
+        if (!(*data_output)->next) {
+            error_output(FAILED_TO_ALLOCATE_MEMORY);
+        }
+        *data_output = (*data_output)->next;
+        (*output_line_number)++;
 
         // Increment the data counter
         (*DC)++;
@@ -217,7 +223,7 @@ void writeBinaryNumbersToDataSegment(char* data_segment, const char* numbers, in
     }
 }
 
-void writeAsciiBinaryToDataSegment(char* data_segment, const char* str, int* DC) {
+void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, int* DC, int* output_line_number) {
     char tempStr[82];  // Temporary string buffer
     char* token;
     int insideQuotes = 0;  // Flag to track whether we're inside quotes
@@ -233,18 +239,24 @@ void writeAsciiBinaryToDataSegment(char* data_segment, const char* str, int* DC)
         if (insideQuotes) {
             for (int j = 0; j < strlen(token); j++) {
                 int asciiVal = token[j];  // Get ASCII value of character
-                char binary[15];  // Buffer to hold binary number
+                char binary[16];  // Buffer to hold binary number
 
                 // Convert ASCII value to binary and store in binary buffer
                 for (int i = 13; i >= 0; i--) {
                     binary[i] = (asciiVal & 1) + '0';
                     asciiVal >>= 1;
                 }
-                binary[14] = '\0';  // Null-terminate the binary string
+                binary[14] = '\n';  // Null-terminate the binary string
+                binary[15] = '\0';  // Null-terminate the binary string
 
-                // Concatenate binary number to the end of the data_segment with a '\n' at the end
-                strcat(data_segment, binary);
-                strcat(data_segment, "\n");
+                (*data_output)->line_number = *output_line_number;
+                strcpy((*data_output)->data, binary);
+                (*data_output)->next = (OutputLines*)malloc(sizeof(OutputLines));
+                if (!(*data_output)->next) {
+                    error_output(FAILED_TO_ALLOCATE_MEMORY);
+                }
+                *data_output = (*data_output)->next;
+                (*output_line_number)++;
 
                 // Increment the data counter
                 (*DC)++;
@@ -256,9 +268,15 @@ void writeAsciiBinaryToDataSegment(char* data_segment, const char* str, int* DC)
 
         token = strtok(NULL, "\"");
     }
-
-    // Concatenate a line of 14 zeros to the end of the data_segment
-    strcat(data_segment, "00000000000000\n");
+    (*data_output)->line_number = *output_line_number;
+    strcpy((*data_output)->data, "00000000000000\n");
+    (*data_output)->next = (OutputLines*)malloc(sizeof(OutputLines));
+    if (!(*data_output)->next) {
+        error_output(FAILED_TO_ALLOCATE_MEMORY);
+    }
+    *data_output = (*data_output)->next;
+    (*output_line_number)++;
+    
     (*DC)++;
 }
 /*

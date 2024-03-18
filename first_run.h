@@ -25,13 +25,13 @@ typedef struct DecodedLines{
 
 FILE* firstRun(FILE* as_file_ptr, char* file_name, Symbol **symbolTable, MacroNode* macros, int IC, int DC);
 void processDefineStatement(char *line, Symbol **symbolTable);
-void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_line, int data_type, char* first_word, int tag_flag, char* data_segment);
+void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_line, int* out_line_number, int data_type, char* first_word, int tag_flag, OutputLines** data_output);
 void processCodeDirectives(char *line, Symbol **symbolTable);
 void insertIntoSymbolTable(Symbol **current_symbol, char *name, int value, int type);
 void freeSymbolTable(Symbol *symbolTable);
 int isTag(char *word, MacroNode* macros);
-void writeBinaryNumbersToDataSegment(char* data_segment, const char* numbers, int* DC);
-void writeAsciiBinaryToDataSegment(char* data_segment, const char* str, int* DC);
+void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numbers, int* DC, int* output_line_number);
+void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, int* DC, int* output_line_number);
 void freeOutputLines(OutputLines *output_lines);
 void freeDecodedLines(DecodedLines *decodedLines);
 void addLineToDecodedLines(DecodedLines** current_decoded_line, int src_line, int output_line, int is_decoded);
