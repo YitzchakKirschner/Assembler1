@@ -15,9 +15,17 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
     FILE *output_file_ptr;
     //int file_length = countLinesInFile(am_file_ptr);
     //int decoded_lines[file_length];
-    OutputLines** data_output_head = (OutputLines**)malloc(sizeof(OutputLines));
+    OutputLines** data_output_head = malloc(sizeof(OutputLines));
+    if (!data_output_head) {
+        error_output(8); // Handle memory allocation failure
+        return NULL; // Return NULL or handle the error as per your requirement
+    }
     OutputLines** data_output = data_output_head;
-    DecodedLines** decoded_lines = (DecodedLines**)malloc(sizeof(DecodedLines));
+    DecodedLines** decoded_lines = malloc(sizeof(DecodedLines));
+    if (!decoded_lines) {
+        error_output(8); // Handle memory allocation failure
+        return NULL; // Return NULL or handle the error as per your requirement
+    }
     DecodedLines** current_decoded_line = decoded_lines;
     char output_file_name[MAX_FILE_NAME_LENGTH];
     char line[MAX_LINE_LENGTH_PLUS_1], first_word[MAX_MACRO_NAME_LENGTH], second_word[MAX_MACRO_NAME_LENGTH];
@@ -198,7 +206,8 @@ void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numb
     while (token != NULL) {
         int number = atoi(token);  // Convert string to integer
         char binary[16];  // Buffer to hold binary number
-
+        OutputLines* current = malloc(sizeof(OutputLines));
+        (*data_output) = current;
         // Convert number to binary and store in binary buffer
         for (int i = 13; i >= 0; i--) {
             binary[i] = (number & 1) + '0';
@@ -375,6 +384,11 @@ void freeDecodedLines(DecodedLines *decodedLines) {
 }
 
 void addLineToDecodedLines(DecodedLines** current_decoded_line, int src_line, int output_line, int is_decoded){
+    DecodedLines* current = malloc(sizeof(DecodedLines));
+    if (!current) {
+        error_output(FAILED_TO_ALLOCATE_MEMORY);
+    }
+    (*current_decoded_line) = current;
     (*current_decoded_line)->src_line_number = src_line;
     (*current_decoded_line)->output_line_number = output_line;
     (*current_decoded_line)->is_decoded = 1;
