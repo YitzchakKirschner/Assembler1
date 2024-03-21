@@ -15,18 +15,20 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
     FILE *output_file_ptr;
     //int file_length = countLinesInFile(am_file_ptr);
     //int decoded_lines[file_length];
-    OutputLines** data_output_head = malloc(sizeof(OutputLines));
+
+    OutputLines* data_output_head = (OutputLines*)malloc(sizeof(OutputLines));
     if (!data_output_head) {
         error_output(8); // Handle memory allocation failure
         return NULL; // Return NULL or handle the error as per your requirement
     }
-    OutputLines** data_output = data_output_head;
-    DecodedLines** decoded_lines = malloc(sizeof(DecodedLines));
-    if (!decoded_lines) {
+    OutputLines* data_output = data_output_head;
+
+    DecodedLines* decoded_lines_head = (DecodedLines*)malloc(sizeof(DecodedLines));
+    if (!decoded_lines_head) {
         error_output(8); // Handle memory allocation failure
         return NULL; // Return NULL or handle the error as per your requirement
     }
-    DecodedLines** current_decoded_line = decoded_lines;
+    DecodedLines* current_decoded_line = decoded_lines_head;
     char output_file_name[MAX_FILE_NAME_LENGTH];
     char line[MAX_LINE_LENGTH_PLUS_1], first_word[MAX_MACRO_NAME_LENGTH], second_word[MAX_MACRO_NAME_LENGTH];
     int output_line_number = 0;
@@ -89,8 +91,8 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
 
     }
 
-    freeOutputLines(*data_output);
-    freeDecodedLines(*decoded_lines);
+    freeOutputLines(data_output_head);
+    freeDecodedLines(decoded_lines_head);
 
     return output_file_ptr;
 }
@@ -115,26 +117,27 @@ void processDefineStatement(char *line, Symbol **symbolTable) {
     insertIntoSymbolTable(current_symbol, name, value, MDEFINE);
 }
 
-void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_line, int* output_line_number, int data_type, char* first_word, int tag_flag, OutputLines** data_output) {
+void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_line, int* output_line_number, int data_type, char* first_word, int tag_flag, OutputLines* data_output) {
     char command_name[MAX_MACRO_NAME_LENGTH];
-    Symbol** current_symbol = symbolTable;
+    Symbol* current_symbol = malloc(sizeof(Symbol));
+    current_symbol = *symbolTable;
     if(tag_flag){
         // Insert into symbol table with DATA property
         /* check the name doesn't appear in the symbol table yet */
-        while(*current_symbol){
-            if(!strcmp((*current_symbol)->name, first_word)){
+        while(current_symbol){
+            if(!strcmp((current_symbol)->name, first_word)){
                 error_output(7);
             }
-            current_symbol = &(*current_symbol)->next;
+            current_symbol = current_symbol->next;
         }
-        insertIntoSymbolTable(current_symbol, first_word, *DC, DATA);
+        insertIntoSymbolTable(&current_symbol, first_word, *DC, DATA);
     }
 
     if(data_type == DATA_CODE){  
-        writeBinaryNumbersToDataSegment(data_output, strstr(line, ".data") + 5, DC, output_line_number);
+        writeBinaryNumbersToDataSegment(&data_output, strstr(line, ".data") + 5, DC, output_line_number);
     }
     else if(data_type == STRING_CODE){
-        writeAsciiBinaryToDataSegment(data_output, strstr(line, ".string") + 7, DC, output_line_number);
+        writeAsciiBinaryToDataSegment(&data_output, strstr(line, ".string") + 7, DC, output_line_number);
     }
 }
 
@@ -193,6 +196,7 @@ int isTag(char* word, MacroNode* macros){
 }
 
 void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numbers, int* DC, int* output_line_number) {
+    OutputLines* current = *data_output;  // Create a temporary pointer to traverse the list
     char tempNumbers[82];  // Temporary numbers buffer
     char* token;
 
@@ -206,23 +210,24 @@ void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numb
     while (token != NULL) {
         int number = atoi(token);  // Convert string to integer
         char binary[16];  // Buffer to hold binary number
-        OutputLines* current = malloc(sizeof(OutputLines));
-        (*data_output) = current;
+        if(current){
+            current->next = (OutputLines*)malloc(sizeof(OutputLines));
+            if (!current->next) {
+                error_output(FAILED_TO_ALLOCATE_MEMORY);
+            }
+            current = current->next;  // Move to the next node
+        }
         // Convert number to binary and store in binary buffer
         for (int i = 13; i >= 0; i--) {
             binary[i] = (number & 1) + '0';
             number >>= 1;
         }
-        binary[15] = '\n';  // Null-terminate the binary string
-        binary[16] = '\0';  // Null-terminate the binary string
+        binary[14] = '\n';  // Null-terminate the binary string
+        binary[15] = '\0';  // Null-terminate the binary string
 
-        (*data_output)->line_number = *output_line_number;
-        strcpy((*data_output)->data, binary);
-        (*data_output)->next = (OutputLines*)malloc(sizeof(OutputLines));
-        if (!(*data_output)->next) {
-            error_output(FAILED_TO_ALLOCATE_MEMORY);
-        }
-        *data_output = (*data_output)->next;
+        current->line_number = *output_line_number;
+        strcpy(current->data, binary);
+        current->is_used = 1;
         (*output_line_number)++;
 
         // Increment the data counter
@@ -233,6 +238,7 @@ void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numb
 }
 
 void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, int* DC, int* output_line_number) {
+    OutputLines* current = *data_output;  // Create a temporary pointer to traverse the list
     char tempStr[82];  // Temporary string buffer
     char* token;
     int insideQuotes = 0;  // Flag to track whether we're inside quotes
@@ -249,7 +255,13 @@ void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, i
             for (int j = 0; j < strlen(token); j++) {
                 int asciiVal = token[j];  // Get ASCII value of character
                 char binary[16];  // Buffer to hold binary number
-
+                if(current){
+                    current->next = (OutputLines*)malloc(sizeof(OutputLines));
+                    if (!current->next) {
+                        error_output(FAILED_TO_ALLOCATE_MEMORY);
+                    }
+                    current = current->next;  // Move to the next node
+                }
                 // Convert ASCII value to binary and store in binary buffer
                 for (int i = 13; i >= 0; i--) {
                     binary[i] = (asciiVal & 1) + '0';
@@ -258,13 +270,10 @@ void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, i
                 binary[14] = '\n';  // Null-terminate the binary string
                 binary[15] = '\0';  // Null-terminate the binary string
 
-                (*data_output)->line_number = *output_line_number;
-                strcpy((*data_output)->data, binary);
-                (*data_output)->next = (OutputLines*)malloc(sizeof(OutputLines));
-                if (!(*data_output)->next) {
-                    error_output(FAILED_TO_ALLOCATE_MEMORY);
-                }
-                *data_output = (*data_output)->next;
+                current->line_number = *output_line_number;
+                current->is_used = 1;
+                strcpy(current->data, binary);
+                current->next = NULL;
                 (*output_line_number)++;
 
                 // Increment the data counter
@@ -277,16 +286,19 @@ void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, i
 
         token = strtok(NULL, "\"");
     }
-    (*data_output)->line_number = *output_line_number;
-    strcpy((*data_output)->data, "00000000000000\n");
-    (*data_output)->next = (OutputLines*)malloc(sizeof(OutputLines));
-    if (!(*data_output)->next) {
+    current->next = (OutputLines*)malloc(sizeof(OutputLines));
+    if (!current->next) {
         error_output(FAILED_TO_ALLOCATE_MEMORY);
     }
-    *data_output = (*data_output)->next;
+    current = current->next;  // Move to the next node
+    current->is_used = 1;
+    current->line_number = *output_line_number;
+    strcpy(current->data, "00000000000000\n");
+    current->next = NULL;
     (*output_line_number)++;
     
     (*DC)++;
+    *data_output = current;
 }
 /*
 /* Function to Process Data Directives *
@@ -383,20 +395,20 @@ void freeDecodedLines(DecodedLines *decodedLines) {
     }
 }
 
-void addLineToDecodedLines(DecodedLines** current_decoded_line, int src_line, int output_line, int is_decoded){
+void addLineToDecodedLines(DecodedLines* current_decoded_line, int src_line, int output_line, int is_decoded){
     DecodedLines* current = malloc(sizeof(DecodedLines));
     if (!current) {
         error_output(FAILED_TO_ALLOCATE_MEMORY);
     }
-    (*current_decoded_line) = current;
-    (*current_decoded_line)->src_line_number = src_line;
-    (*current_decoded_line)->output_line_number = output_line;
-    (*current_decoded_line)->is_decoded = 1;
-    DecodedLines** temp = (DecodedLines**)malloc(sizeof(DecodedLines));
+    current_decoded_line = current;
+    current_decoded_line->src_line_number = src_line;
+    current_decoded_line->output_line_number = output_line;
+    current_decoded_line->is_decoded = 1;
+    DecodedLines* temp = (DecodedLines*)malloc(sizeof(DecodedLines));
         if (!temp) {
         error_output(FAILED_TO_ALLOCATE_MEMORY);
     }
-    (*current_decoded_line)->next = *temp;
-    *current_decoded_line = *temp;
+    current_decoded_line->next = temp;
+    current_decoded_line = temp;
 }
 // Additional supporting functions and logic can be added here/* Test Cases for Assembler Algorithm */#include <assert.h>/* Function to Test Symbol Table Insertion */void testSymbolTableInsertion() {    Symbol symbolTable = NULL;    assert(insertIntoSymbolTable(&symbolTable, "LABEL1", 100, DATA) == 1); // Successful insertion    assert(insertIntoSymbolTable(&symbolTable, "LABEL1", 100, DATA) == 0); // Duplicate symbol    // Add more test cases as needed}/* Function to Test Process Define Statement */void testProcessDefineStatement() {    Symbol symbolTable = NULL;    char line[] = "define PI 3";    processDefineStatement(line, &symbolTable);    // Add assertions to validate the symbol table contents    // Add more test cases as needed}/* Function to Test Process Data Directives */void testProcessDataDirectives() {    // Add test cases for processing .data and .string directives    // Validate the DC updates and symbol table contents}/* Function to Test Process Code Directives */void testProcessCodeDirectives() {    // Add test cases for processing .extern, .entry, and instruction lines    // Validate the IC updates and symbol table contents}/* Main Function to Run Tests */int main() {    testSymbolTableInsertion();    testProcessDefineStatement();    testProcessDataDirectives();    testProcessCodeDirectives();    printf("All tests passed successfully!\n");    return 0;}// Add more tests and final touches as needed/* Complete Logic of processDataDirectives */void processDataDirectives(char *line, Symbol *symbolTable, int *DC) {    char label[MAX_MACRO_NAME_LENGTH];    // Example condition to check for a label (this should be adjusted based on the actual file format)    if (sscanf(line, "%s", label) == 1) {        // Insert label into symbol table with DATA property        insertIntoSymbolTable(symbolTable, label, *DC, DATA);        // Update DC accordingly based on the data encoded        // Logic to encode data and update DC    }    // Additional logic for processing data directives}/* Complete Logic of processCodeDirectives */void processCodeDirectives(char *line, Symbol *symbolTable, int *IC) {    char label[MAX_MACRO_NAME_LENGTH];    // Example condition to check for a label (this should be adjusted based on the actual file format)    if (sscanf(line, "%s", label) == 1) {        // Insert label into symbol table with CODE property        insertIntoSymbolTable(symbolTable, label, *IC + 100, CODE);        // Update IC accordingly based on the instruction encoded        // Logic to encode instruction and update IC    }    // Additional logic for processing code directives}// Additional supporting functions and logic can be added here

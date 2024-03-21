@@ -25,7 +25,7 @@ typedef struct DecodedLines{
 
 FILE* firstRun(FILE* as_file_ptr, char* file_name, Symbol **symbolTable, MacroNode* macros, int IC, int DC);
 void processDefineStatement(char *line, Symbol **symbolTable);
-void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_line, int* out_line_number, int data_type, char* first_word, int tag_flag, OutputLines** data_output);
+void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_line, int* out_line_number, int data_type, char* first_word, int tag_flag, OutputLines* data_output);
 void processCodeDirectives(char *line, Symbol **symbolTable);
 void insertIntoSymbolTable(Symbol **current_symbol, char *name, int value, int type);
 void freeSymbolTable(Symbol *symbolTable);
@@ -34,6 +34,6 @@ void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numb
 void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, int* DC, int* output_line_number);
 void freeOutputLines(OutputLines *output_lines);
 void freeDecodedLines(DecodedLines *decodedLines);
-void addLineToDecodedLines(DecodedLines** current_decoded_line, int src_line, int output_line, int is_decoded);
+void addLineToDecodedLines(DecodedLines* current_decoded_line, int src_line, int output_line, int is_decoded);
 #define DATA_CODE 1
 #define STRING_CODE 2
