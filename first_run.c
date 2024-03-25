@@ -256,13 +256,6 @@ void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, i
             for (int j = 0; j < strlen(token); j++) {
                 int asciiVal = token[j];  // Get ASCII value of character
                 char binary[16];  // Buffer to hold binary number
-                if(current){
-                    current->next = (OutputLines*)malloc(sizeof(OutputLines));
-                    if (!current->next) {
-                        error_output(FAILED_TO_ALLOCATE_MEMORY);
-                    }
-                    current = current->next;  // Move to the next node
-                }
                 // Convert ASCII value to binary and store in binary buffer
                 for (int i = 13; i >= 0; i--) {
                     binary[i] = (asciiVal & 1) + '0';
@@ -274,7 +267,11 @@ void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, i
                 current->line_number = *output_line_number;
                 current->is_used = 1;
                 strcpy(current->data, binary);
-                current->next = NULL;
+                current->next = (OutputLines*)malloc(sizeof(OutputLines));
+                if (!current->next) {
+                    error_output(FAILED_TO_ALLOCATE_MEMORY);
+                }
+                current = current->next;  // Move to the next node
                 (*output_line_number)++;
 
                 // Increment the data counter
@@ -287,15 +284,14 @@ void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, i
 
         token = strtok(NULL, "\"");
     }
+    current->is_used = 1;
+    current->line_number = *output_line_number;
+    strcpy(current->data, "00000000000000\n");
     current->next = (OutputLines*)malloc(sizeof(OutputLines));
     if (!current->next) {
         error_output(FAILED_TO_ALLOCATE_MEMORY);
     }
     current = current->next;  // Move to the next node
-    current->is_used = 1;
-    current->line_number = *output_line_number;
-    strcpy(current->data, "00000000000000\n");
-    current->next = NULL;
     (*output_line_number)++;
     
     (*DC)++;
