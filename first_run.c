@@ -21,7 +21,8 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
         error_output(8); // Handle memory allocation failure
         return NULL; // Return NULL or handle the error as per your requirement
     }
-    OutputLines* data_output = data_output_head;
+    OutputLines** data_output = (OutputLines**)malloc(sizeof(OutputLines));
+    *data_output = data_output_head;
 
     DecodedLines* decoded_lines_head = (DecodedLines*)malloc(sizeof(DecodedLines));
     if (!decoded_lines_head) {
@@ -117,7 +118,7 @@ void processDefineStatement(char *line, Symbol **symbolTable) {
     insertIntoSymbolTable(current_symbol, name, value, MDEFINE);
 }
 
-void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_line, int* output_line_number, int data_type, char* first_word, int tag_flag, OutputLines* data_output) {
+void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_line, int* output_line_number, int data_type, char* first_word, int tag_flag, OutputLines** data_output) {
     char command_name[MAX_MACRO_NAME_LENGTH];
     Symbol* current_symbol = malloc(sizeof(Symbol));
     current_symbol = *symbolTable;
@@ -134,10 +135,10 @@ void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_li
     }
 
     if(data_type == DATA_CODE){  
-        writeBinaryNumbersToDataSegment(&data_output, strstr(line, ".data") + 5, DC, output_line_number);
+        writeBinaryNumbersToDataSegment(data_output, strstr(line, ".data") + 5, DC, output_line_number);
     }
     else if(data_type == STRING_CODE){
-        writeAsciiBinaryToDataSegment(&data_output, strstr(line, ".string") + 7, DC, output_line_number);
+        writeAsciiBinaryToDataSegment(data_output, strstr(line, ".string") + 7, DC, output_line_number);
     }
 }
 
@@ -210,13 +211,6 @@ void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numb
     while (token != NULL) {
         int number = atoi(token);  // Convert string to integer
         char binary[16];  // Buffer to hold binary number
-        if(current){
-            current->next = (OutputLines*)malloc(sizeof(OutputLines));
-            if (!current->next) {
-                error_output(FAILED_TO_ALLOCATE_MEMORY);
-            }
-            current = current->next;  // Move to the next node
-        }
         // Convert number to binary and store in binary buffer
         for (int i = 13; i >= 0; i--) {
             binary[i] = (number & 1) + '0';
@@ -229,12 +223,19 @@ void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numb
         strcpy(current->data, binary);
         current->is_used = 1;
         (*output_line_number)++;
+        current->next = (OutputLines*)malloc(sizeof(OutputLines));
+        if (!current->next) {
+            error_output(FAILED_TO_ALLOCATE_MEMORY);
+        }
+        current = current->next;  // Move to the next node
 
         // Increment the data counter
         (*DC)++;
 
         token = strtok(NULL, ",");
+
     }
+    *data_output = current;
 }
 
 void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, int* DC, int* output_line_number) {
