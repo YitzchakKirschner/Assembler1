@@ -35,5 +35,6 @@ void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, i
 void freeOutputLines(OutputLines *output_lines);
 void freeDecodedLines(DecodedLines *decodedLines);
 void addLineToDecodedLines(DecodedLines* current_decoded_line, int src_line, int output_line, int is_decoded);
+void writeDataToFile(OutputLines* data_output_head, FILE* output_file_ptr);
 #define DATA_CODE 1
 #define STRING_CODE 2

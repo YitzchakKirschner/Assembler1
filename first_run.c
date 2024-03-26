@@ -91,6 +91,7 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
         src_line++;
 
     }
+    writeDataToFile(data_output_head, output_file_ptr);
 
     freeOutputLines(data_output_head);
     freeDecodedLines(decoded_lines_head);
@@ -284,17 +285,6 @@ void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, i
 
         token = strtok(NULL, "\"");
     }
-    current->is_used = 1;
-    current->line_number = *output_line_number;
-    strcpy(current->data, "00000000000000\n");
-    current->next = (OutputLines*)malloc(sizeof(OutputLines));
-    if (!current->next) {
-        error_output(FAILED_TO_ALLOCATE_MEMORY);
-    }
-    current = current->next;  // Move to the next node
-    (*output_line_number)++;
-    
-    (*DC)++;
     *data_output = current;
 }
 /*
@@ -407,5 +397,15 @@ void addLineToDecodedLines(DecodedLines* current_decoded_line, int src_line, int
     }
     current_decoded_line->next = temp;
     current_decoded_line = temp;
+}
+
+void writeDataToFile(OutputLines* data_output_head, FILE* output_file_ptr) {
+    OutputLines* current = data_output_head;
+
+    while (current != NULL) {
+        // Assuming data is a null-terminated string
+        fprintf(output_file_ptr, "%s", current->data);
+        current = current->next;
+    }
 }
 // Additional supporting functions and logic can be added here/* Test Cases for Assembler Algorithm */#include <assert.h>/* Function to Test Symbol Table Insertion */void testSymbolTableInsertion() {    Symbol symbolTable = NULL;    assert(insertIntoSymbolTable(&symbolTable, "LABEL1", 100, DATA) == 1); // Successful insertion    assert(insertIntoSymbolTable(&symbolTable, "LABEL1", 100, DATA) == 0); // Duplicate symbol    // Add more test cases as needed}/* Function to Test Process Define Statement */void testProcessDefineStatement() {    Symbol symbolTable = NULL;    char line[] = "define PI 3";    processDefineStatement(line, &symbolTable);    // Add assertions to validate the symbol table contents    // Add more test cases as needed}/* Function to Test Process Data Directives */void testProcessDataDirectives() {    // Add test cases for processing .data and .string directives    // Validate the DC updates and symbol table contents}/* Function to Test Process Code Directives */void testProcessCodeDirectives() {    // Add test cases for processing .extern, .entry, and instruction lines    // Validate the IC updates and symbol table contents}/* Main Function to Run Tests */int main() {    testSymbolTableInsertion();    testProcessDefineStatement();    testProcessDataDirectives();    testProcessCodeDirectives();    printf("All tests passed successfully!\n");    return 0;}// Add more tests and final touches as needed/* Complete Logic of processDataDirectives */void processDataDirectives(char *line, Symbol *symbolTable, int *DC) {    char label[MAX_MACRO_NAME_LENGTH];    // Example condition to check for a label (this should be adjusted based on the actual file format)    if (sscanf(line, "%s", label) == 1) {        // Insert label into symbol table with DATA property        insertIntoSymbolTable(symbolTable, label, *DC, DATA);        // Update DC accordingly based on the data encoded        // Logic to encode data and update DC    }    // Additional logic for processing data directives}/* Complete Logic of processCodeDirectives */void processCodeDirectives(char *line, Symbol *symbolTable, int *IC) {    char label[MAX_MACRO_NAME_LENGTH];    // Example condition to check for a label (this should be adjusted based on the actual file format)    if (sscanf(line, "%s", label) == 1) {        // Insert label into symbol table with CODE property        insertIntoSymbolTable(symbolTable, label, *IC + 100, CODE);        // Update IC accordingly based on the instruction encoded        // Logic to encode instruction and update IC    }    // Additional logic for processing code directives}// Additional supporting functions and logic can be added here
