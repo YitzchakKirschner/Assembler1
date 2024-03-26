@@ -29,7 +29,8 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
         error_output(8); // Handle memory allocation failure
         return NULL; // Return NULL or handle the error as per your requirement
     }
-    DecodedLines* current_decoded_line = decoded_lines_head;
+    DecodedLines** current_decoded_line = (DecodedLines**)malloc(sizeof(DecodedLines));
+    *current_decoded_line = decoded_lines_head;
     char output_file_name[MAX_FILE_NAME_LENGTH];
     char line[MAX_LINE_LENGTH_PLUS_1], first_word[MAX_MACRO_NAME_LENGTH], second_word[MAX_MACRO_NAME_LENGTH];
     int output_line_number = 0;
@@ -57,7 +58,7 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
             return output_file_ptr; /* End of file */
 
         if (strcmp(first_word, ".define") == 0) {
-            addLineToDecodedLines(current_decoded_line, src_line, DC, 0);
+            addLineToDecodedLines(current_decoded_line, src_line, -1, 0);
             processDefineStatement(line, symbolTable);
         }
         
@@ -382,21 +383,18 @@ void freeDecodedLines(DecodedLines *decodedLines) {
     }
 }
 
-void addLineToDecodedLines(DecodedLines* current_decoded_line, int src_line, int output_line, int is_decoded){
-    DecodedLines* current = malloc(sizeof(DecodedLines));
-    if (!current) {
-        error_output(FAILED_TO_ALLOCATE_MEMORY);
-    }
-    current_decoded_line = current;
-    current_decoded_line->src_line_number = src_line;
-    current_decoded_line->output_line_number = output_line;
-    current_decoded_line->is_decoded = 1;
-    DecodedLines* temp = (DecodedLines*)malloc(sizeof(DecodedLines));
-        if (!temp) {
-        error_output(FAILED_TO_ALLOCATE_MEMORY);
-    }
-    current_decoded_line->next = temp;
-    current_decoded_line = temp;
+void addLineToDecodedLines(DecodedLines** current_decoded_line, int src_line, int output_line, int is_decoded){
+    DecodedLines* current = *current_decoded_line;
+    current->src_line_number = src_line;
+    current->output_line_number = output_line;
+    current->is_decoded = 1;
+    current->next = (DecodedLines*)malloc(sizeof(DecodedLines));
+        if (current->next == NULL) {
+            error_output(FAILED_TO_ALLOCATE_MEMORY);
+        }
+    current = current->next;
+    current->src_line_number = -1;
+    *current_decoded_line = current;
 }
 
 void writeDataToFile(OutputLines* data_output_head, FILE* output_file_ptr) {
