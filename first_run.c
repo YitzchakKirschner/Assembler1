@@ -33,7 +33,7 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
     *current_decoded_line = decoded_lines_head;
     char output_file_name[MAX_FILE_NAME_LENGTH];
     char line[MAX_LINE_LENGTH_PLUS_1], first_word[MAX_MACRO_NAME_LENGTH], second_word[MAX_MACRO_NAME_LENGTH];
-    int output_line_number = 0;
+    int dc = 0;
     int src_line = 0;
     int tag_flag = 0;
    
@@ -59,7 +59,7 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
 
         if (strcmp(first_word, ".define") == 0) {
             addLineToDecodedLines(current_decoded_line, src_line, -1, 0);
-            processDefineStatement(line, symbolTable);
+            processDefineStatement(line, symbolTable, macro_head);
         }
         
         if (isTag(first_word, macro_head)) {
@@ -77,10 +77,10 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
 
         if(strcmp(second_word, ".data") == 0){
             addLineToDecodedLines(current_decoded_line, src_line, DC, 0);
-            processDataDirective(line, symbolTable, &DC, &src_line, &output_line_number, DATA_CODE, first_word, tag_flag, data_output);
+            processDataDirective(line, symbolTable, &DC, &src_line, &dc, DATA_CODE, first_word, tag_flag, data_output);
         } else if(strcmp(second_word, ".string") == 0){
             addLineToDecodedLines(current_decoded_line, src_line, DC, 0);
-            processDataDirective(line, symbolTable, &DC,&src_line, &output_line_number, STRING_CODE, first_word, tag_flag, data_output);
+            processDataDirective(line, symbolTable, &DC,&src_line, &dc, STRING_CODE, first_word, tag_flag, data_output);
         } /*else if(strcmp(second_word, ".entry") == 0){
             processCodeDirectives(line, symbolTable, &IC);
         } else if(strcmp(second_word, ".extern") == 0){
@@ -102,7 +102,7 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
 
 
 /* Function to Process 'define' Statements */
-void processDefineStatement(char *line, Symbol **symbolTable) {
+void processDefineStatement(char *line, Symbol **symbolTable, MacroNode* macro_head) {
     char name[MAX_MACRO_NAME_LENGTH];
     int value;
     Symbol** current_symbol = symbolTable;
@@ -117,10 +117,13 @@ void processDefineStatement(char *line, Symbol **symbolTable) {
         }
         current_symbol = &(*current_symbol)->next;
     }
+
+    if(findMacro(macro_head, name))
+        error_output(9);
     insertIntoSymbolTable(current_symbol, name, value, MDEFINE);
 }
 
-void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_line, int* output_line_number, int data_type, char* first_word, int tag_flag, OutputLines** data_output) {
+void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_line, int* dc, int data_type, char* first_word, int tag_flag, OutputLines** data_output) {
     char command_name[MAX_MACRO_NAME_LENGTH];
     Symbol* current_symbol = malloc(sizeof(Symbol));
     current_symbol = *symbolTable;
@@ -137,10 +140,10 @@ void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_li
     }
 
     if(data_type == DATA_CODE){  
-        writeBinaryNumbersToDataSegment(data_output, strstr(line, ".data") + 5, DC, output_line_number);
+        writeBinaryNumbersToDataSegment(data_output, strstr(line, ".data") + 5, DC, dc);
     }
     else if(data_type == STRING_CODE){
-        writeAsciiBinaryToDataSegment(data_output, strstr(line, ".string") + 7, DC, output_line_number);
+        writeAsciiBinaryToDataSegment(data_output, strstr(line, ".string") + 7, DC, dc);
     }
 }
 
@@ -198,7 +201,7 @@ int isTag(char* word, MacroNode* macros){
     return 1;
 }
 
-void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numbers, int* DC, int* output_line_number) {
+void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numbers, int* DC, int* dc) {
     OutputLines* current = *data_output;  // Create a temporary pointer to traverse the list
     char tempNumbers[82];  // Temporary numbers buffer
     char* token;
@@ -221,10 +224,10 @@ void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numb
         binary[14] = '\n';  // Null-terminate the binary string
         binary[15] = '\0';  // Null-terminate the binary string
 
-        current->line_number = *output_line_number;
+        current->line_number = *dc;
         strcpy(current->data, binary);
         current->is_used = 1;
-        (*output_line_number)++;
+        (*dc)++;
         current->next = (OutputLines*)malloc(sizeof(OutputLines));
         if (!current->next) {
             error_output(FAILED_TO_ALLOCATE_MEMORY);
@@ -240,7 +243,7 @@ void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numb
     *data_output = current;
 }
 
-void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, int* DC, int* output_line_number) {
+void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, int* DC, int* dc) {
     OutputLines* current = *data_output;  // Create a temporary pointer to traverse the list
     char tempStr[82];  // Temporary string buffer
     char* token;
@@ -266,7 +269,7 @@ void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, i
                 binary[14] = '\n';  // Null-terminate the binary string
                 binary[15] = '\0';  // Null-terminate the binary string
 
-                current->line_number = *output_line_number;
+                current->line_number = *dc;
                 current->is_used = 1;
                 strcpy(current->data, binary);
                 current->next = (OutputLines*)malloc(sizeof(OutputLines));
@@ -274,7 +277,7 @@ void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, i
                     error_output(FAILED_TO_ALLOCATE_MEMORY);
                 }
                 current = current->next;  // Move to the next node
-                (*output_line_number)++;
+                (*dc)++;
 
                 // Increment the data counter
                 (*DC)++;

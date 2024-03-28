@@ -37,6 +37,9 @@ void error_output(int error_code){
         fprintf(stderr, "The tag you've chosen is a saved word or a name of a macro. Try using a different name.\n");
         break;
 
+    case USED_MACRO_AS_DEFINE:
+        fprintf(stderr, "The name you've chosen for your define statement is a macro. Try using a different name.\n");
+        break;
 
     default:
         fprintf(stderr, "An unknown error occurred.\n");

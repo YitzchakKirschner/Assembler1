@@ -154,25 +154,6 @@ MacroNode** addMacro(MacroNode **head, const char *name) {
     return NULL;
 }
 
-/*
-void getFirstWord(const char *line, char *firstWord) {
-    int i = 0, j = 0;
-
-    /* Skip leading whitespaces *
-    while (line[i] == ' ' || line[i] == '\t') {
-        i++;
-    }
-
-    /* Capture the first word*
-    while (line[i] != '\0' && line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
-        firstWord[j++] = line[i++];
-    }
-
-    /* Null-terminate the first word *
-    firstWord[j] = '\0';
-}
-*/
-
 
 void getWordAtIndex(const char* line, char* output, int wordIndex) {
     int i = 1;
@@ -183,16 +164,23 @@ void getWordAtIndex(const char* line, char* output, int wordIndex) {
     strcpy(tempLine, line);
 
     // Get the first token
-    token = strtok(tempLine, " ");
+    token = strtok(tempLine, " \t\n");
 
     // Walk through other tokens
     while (token != NULL) {
         if (i == wordIndex) {
             strcpy(output, token);
+
+            // Remove trailing newline character if it exists
+            size_t len = strlen(output);
+            if (len > 0 && output[len - 1] == '\n') {
+                output[len - 1] = '\0';
+            }
+
             break;
         }
         i++;
-        token = strtok(NULL, " ");
+        token = strtok(NULL, " \t\n");
     }
 }
 

@@ -6,5 +6,6 @@
 #define DEFINE_SYNTAX_ERROR 6
 #define NAME_IS_DUPLICATE 7
 #define USED_SAVED_WORD_AS_TAG 8
+#define USED_MACRO_AS_DEFINE 9
 
 void error_output(int error_code);

@@ -15,3 +15,4 @@ int countLinesInFile(FILE* file) {
 
     return count;
 }
+
