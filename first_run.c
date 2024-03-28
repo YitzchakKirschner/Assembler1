@@ -8,6 +8,7 @@
 #include "first_run.h"
 #include "util.h"
 
+
 #define MAX_TAG_LENGTH 31
 
 /* Main Assembler Algorithm Functions */
@@ -88,6 +89,9 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
         } else {
             processCodeDirectives(line, symbolTable, &IC);
         }*/
+
+        else
+            processCodeDirective(line, symbolTable, &DC, &src_line, first_word, tag_flag, data_output, current_decoded_line);
 
         src_line++;
 
@@ -399,6 +403,107 @@ void addLineToDecodedLines(DecodedLines** current_decoded_line, int src_line, in
     current->src_line_number = -1;
     *current_decoded_line = current;
 }
+
+void processCodeDirective(char *line, Symbol **symbolTable, int *IC, int* src_line, char* first_word, int tag_flag, OutputLines** data_output, DecodedLines** current_decoded_line){
+    if(strcmp(first_word, "mov") == 0){
+        processMov(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+    } else if(strcmp(first_word, "cmp") == 0){
+        processCmp(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+    } else if(strcmp(first_word, "add") == 0){
+        processAdd(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+    } else if(strcmp(first_word, "sub") == 0){
+        processSub(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+    } else if(strcmp(first_word, "not") == 0){
+        processNot(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+    } else if(strcmp(first_word, "clr") == 0){
+        processClr(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+    } else if(strcmp(first_word, "lea") == 0){
+        processLea(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+    } else if(strcmp(first_word, "inc") == 0){
+        processInc(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+    } else if(strcmp(first_word, "dec") == 0){
+        processDec(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+    } else if(strcmp(first_word, "jmp") == 0){
+        processJmp(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+    } else if(strcmp(first_word, "bne") == 0){
+        processBne(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+    } else if(strcmp(first_word, "red") == 0){
+        processRed(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+    } else if(strcmp(first_word, "prn") == 0){
+        processPrn(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+    } else if(strcmp(first_word, "jsr") == 0){
+        processJsr(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+    } else if(strcmp(first_word, "rts") == 0){
+        processRts(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+    } else if(strcmp(first_word, "hlt") == 0){
+        processHlt(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+    }
+}
+
+void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+
+}
+
+void processCmp(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+
+}
+
+void processAdd(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+
+}
+
+void processSub(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+
+}
+
+void processNot(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+
+}
+
+void processClr(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+
+}
+
+void processLea(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+
+}
+
+void processInc(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+
+}
+
+void processDec(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+
+}
+
+void processJmp(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+
+}
+
+void processBne(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+
+}
+
+void processRed(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+
+}
+
+void processPrn(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+
+}
+
+void processJsr(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+
+}
+
+void processRts(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+
+}
+
+void processHlt(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+
+}
+
 
 void writeDataToFile(OutputLines* data_output_head, FILE* output_file_ptr) {
     OutputLines* current = data_output_head;
