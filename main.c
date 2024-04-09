@@ -11,7 +11,7 @@ int main(int argc, char* argv[]){
     int i; /* Counter */
     FILE* as_file_ptr;
     FILE* am_file_ptr;
-    FILE* object_file_ptr;
+    
     FILE* output_file_ptr;
     MacroNode **macro_head = (MacroNode **)malloc(sizeof(MacroNode)); /*List of macros*/
     Symbol **symbolTable = (Symbol **)malloc(sizeof(Symbol));

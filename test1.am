@@ -6,7 +6,7 @@ this is the first line of the file
 thsi is the second line ofthe file
 AAAAAAAAAAAAAA
 BBBBBBBBBBBBBB
-.define test = 5
+.define tesit = 5
 .define len = 4
 CCCCCCCCCCCCC
 DDDDDDDDDDDD

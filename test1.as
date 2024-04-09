@@ -13,7 +13,7 @@ this is the first line of the file
 .string "1234"
 thsi is the second line ofthe file
 1
-.define test = 5
+.define tesit = 5
 .define len = 4
 hello
 1

@@ -14,6 +14,7 @@
 /* Main Assembler Algorithm Functions */
 FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNode* macro_head, int IC, int DC){
     FILE *output_file_ptr;
+    FILE* object_file_ptr;
     //int file_length = countLinesInFile(am_file_ptr);
     //int decoded_lines[file_length];
 
@@ -25,16 +26,17 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
     OutputLines** data_output = (OutputLines**)malloc(sizeof(OutputLines));
     *data_output = data_output_head;
 
-    DecodedLines* decoded_lines_head = (DecodedLines*)malloc(sizeof(DecodedLines));
-    if (!decoded_lines_head) {
+    OutputLines* instruction_output_head = (OutputLines*)malloc(sizeof(OutputLines));
+    if (!instruction_output_head) {
         error_output(8); // Handle memory allocation failure
         return NULL; // Return NULL or handle the error as per your requirement
     }
-    DecodedLines** current_decoded_line = (DecodedLines**)malloc(sizeof(DecodedLines));
-    *current_decoded_line = decoded_lines_head;
+    OutputLines** instruction_output = (OutputLines**)malloc(sizeof(OutputLines));
+    *instruction_output = instruction_output_head;
+
+    char object_file_name[MAX_FILE_NAME_LENGTH];
     char output_file_name[MAX_FILE_NAME_LENGTH];
     char line[MAX_LINE_LENGTH_PLUS_1], first_word[MAX_MACRO_NAME_LENGTH], second_word[MAX_MACRO_NAME_LENGTH];
-    int dc = 0;
     int src_line = 0;
     int tag_flag = 0;
    
@@ -44,8 +46,18 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
     strcat(output_file_name, ".output"); /* Add "output" to the end of the file name */
     output_file_ptr = fopen(output_file_name, "w+");
 
+
     /* Confirm file opening. */
     if (!output_file_ptr){
+        error_output(2);
+        return NULL;
+    }
+
+    strcpy(object_file_name, file_name);
+    strcat(object_file_name, ".ob"); /* Add "output" to the end of the file name */
+    object_file_ptr = fopen(object_file_name, "w+");
+
+    if (!object_file_ptr){
         error_output(2);
         return NULL;
     }
@@ -59,7 +71,6 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
             return output_file_ptr; /* End of file */
 
         if (strcmp(first_word, ".define") == 0) {
-            addLineToDecodedLines(current_decoded_line, src_line, -1, 0);
             processDefineStatement(line, symbolTable, macro_head);
         }
         
@@ -77,11 +88,9 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
         }
 
         if(strcmp(second_word, ".data") == 0){
-            addLineToDecodedLines(current_decoded_line, src_line, DC, 0);
-            processDataDirective(line, symbolTable, &DC, &src_line, &dc, DATA_CODE, first_word, tag_flag, data_output);
+            processDataDirective(line, symbolTable, &DC, &src_line, DATA_CODE, first_word, tag_flag, data_output);
         } else if(strcmp(second_word, ".string") == 0){
-            addLineToDecodedLines(current_decoded_line, src_line, DC, 0);
-            processDataDirective(line, symbolTable, &DC,&src_line, &dc, STRING_CODE, first_word, tag_flag, data_output);
+            processDataDirective(line, symbolTable, &DC, &src_line, STRING_CODE, first_word, tag_flag, data_output);
         } /*else if(strcmp(second_word, ".entry") == 0){
             processCodeDirectives(line, symbolTable, &IC);
         } else if(strcmp(second_word, ".extern") == 0){
@@ -91,7 +100,7 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
         }*/
 
         else
-            processCodeDirective(line, symbolTable, &DC, &src_line, first_word, tag_flag, data_output, current_decoded_line);
+            processCodeDirective(line, symbolTable, &IC, &src_line, first_word, tag_flag, instruction_output);
 
         src_line++;
 
@@ -99,7 +108,7 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
     writeDataToFile(data_output_head, output_file_ptr);
 
     freeOutputLines(data_output_head);
-    freeDecodedLines(decoded_lines_head);
+    freeOutputLines(instruction_output_head);
 
     return output_file_ptr;
 }
@@ -127,7 +136,7 @@ void processDefineStatement(char *line, Symbol **symbolTable, MacroNode* macro_h
     insertIntoSymbolTable(current_symbol, name, value, MDEFINE);
 }
 
-void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_line, int* dc, int data_type, char* first_word, int tag_flag, OutputLines** data_output) {
+void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_line, int data_type, char* first_word, int tag_flag, OutputLines** data_output) {
     char command_name[MAX_MACRO_NAME_LENGTH];
     Symbol* current_symbol = malloc(sizeof(Symbol));
     current_symbol = *symbolTable;
@@ -144,10 +153,10 @@ void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_li
     }
 
     if(data_type == DATA_CODE){  
-        writeBinaryNumbersToDataSegment(data_output, strstr(line, ".data") + 5, DC, dc);
+        writeBinaryNumbersToDataSegment(data_output, strstr(line, ".data") + 5, DC);
     }
     else if(data_type == STRING_CODE){
-        writeAsciiBinaryToDataSegment(data_output, strstr(line, ".string") + 7, DC, dc);
+        writeAsciiBinaryToDataSegment(data_output, strstr(line, ".string") + 7, DC);
     }
 }
 
@@ -205,10 +214,12 @@ int isTag(char* word, MacroNode* macros){
     return 1;
 }
 
-void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numbers, int* DC, int* dc) {
+void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numbers, int* DC) {
     OutputLines* current = *data_output;  // Create a temporary pointer to traverse the list
     char tempNumbers[82];  // Temporary numbers buffer
     char* token;
+    
+
 
     // Copy numbers to tempNumbers so strtok doesn't modify original string
     strcpy(tempNumbers, numbers);
@@ -218,8 +229,17 @@ void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numb
 
     // Walk through other tokens
     while (token != NULL) {
+
+        outputText *newOutputText = (outputText *)malloc(sizeof(outputText));
+        if (!newOutputText) { /* Handle memory allocation error*/
+            error_output(4);
+            return;
+        }
+        newOutputText->next = NULL;
+
         int number = atoi(token);  // Convert string to integer
         char binary[16];  // Buffer to hold binary number
+
         // Convert number to binary and store in binary buffer
         for (int i = 13; i >= 0; i--) {
             binary[i] = (number & 1) + '0';
@@ -228,10 +248,10 @@ void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numb
         binary[14] = '\n';  // Null-terminate the binary string
         binary[15] = '\0';  // Null-terminate the binary string
 
-        current->line_number = *dc;
-        strcpy(current->data, binary);
-        current->is_used = 1;
-        (*dc)++;
+        current->input_line_number = *DC;
+        strcpy(newOutputText->text, binary);
+        current->firstLine = newOutputText;
+        current->is_decoded = 1;
         current->next = (OutputLines*)malloc(sizeof(OutputLines));
         if (!current->next) {
             error_output(FAILED_TO_ALLOCATE_MEMORY);
@@ -247,7 +267,7 @@ void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numb
     *data_output = current;
 }
 
-void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, int* DC, int* dc) {
+void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, int* DC) {
     OutputLines* current = *data_output;  // Create a temporary pointer to traverse the list
     char tempStr[82];  // Temporary string buffer
     char* token;
@@ -263,6 +283,14 @@ void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, i
     while (token != NULL) {
         if (insideQuotes) {
             for (int j = 0; j < strlen(token); j++) {
+
+                outputText *newOutputText = (outputText *)malloc(sizeof(outputText));
+                if (!newOutputText) { /* Handle memory allocation error*/
+                    error_output(4);
+                    return;
+                }
+                newOutputText->next = NULL;
+                
                 int asciiVal = token[j];  // Get ASCII value of character
                 char binary[16];  // Buffer to hold binary number
                 // Convert ASCII value to binary and store in binary buffer
@@ -273,15 +301,16 @@ void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, i
                 binary[14] = '\n';  // Null-terminate the binary string
                 binary[15] = '\0';  // Null-terminate the binary string
 
-                current->line_number = *dc;
-                current->is_used = 1;
-                strcpy(current->data, binary);
+                current->input_line_number = *DC;
+                current->is_decoded = 1;
+                strcpy(newOutputText->text, binary);
+                current->firstLine = newOutputText;
+
                 current->next = (OutputLines*)malloc(sizeof(OutputLines));
                 if (!current->next) {
                     error_output(FAILED_TO_ALLOCATE_MEMORY);
                 }
                 current = current->next;  // Move to the next node
-                (*dc)++;
 
                 // Increment the data counter
                 (*DC)++;
@@ -295,61 +324,7 @@ void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, i
     }
     *data_output = current;
 }
-/*
-/* Function to Process Data Directives *
-void processDataDirectives(char *line, Symbol *symbolTable) {
-    // Handle .data and .string directives
-    // Implementation will be added here
-}
 
-/* Function to Process Code Directives *
-void processCodeDirectives(char *line, Symbol *symbolTable) {
-    // Handle .extern and .entry directives, as well as regular instruction lines
-    // Implementation will be added here
-}
-
-// More functions and their implementations will be added here
-
-
-/* Detailed Implementation of processDataDirectives *
-void processDataDirectives(char *line, Symbol *symbolTable, int *DC) {
-    // Implementation for handling .data and .string directives
-    // Update DC accordingly
-    // Handle symbol insertion and error checking
-}
-
-/* Detailed Implementation of processCodeDirectives *
-void processCodeDirectives(char *line, Symbol *symbolTable, int *IC) {
-    // Implementation for handling .extern and .entry directives, and regular instruction lines
-    // Update IC accordingly
-    // Handle symbol insertion and error checking
-}
-
-
-
-/* Final Implementation of processDataDirectives *
-void processDataDirectives(char *line, Symbol *symbolTable, int *DC) {
-    char label[MAX_MACRO_NAME_LENGTH];
-    // Check if there is a label definition
-    if (/* condition to check for label *) {
-        // Extract label and process it
-        // Insert label into symbol table with DATA property
-        // Update DC accordingly
-    }
-    // Additional logic for processing data directives
-//}
-
-/* Final Implementation of processCodeDirectives *
-void processCodeDirectives(char *line, Symbol *symbolTable, int *IC) {
-    char label[MAX_MACRO_NAME_LENGTH];
-    // Check if there is a label definition
-    if (/* condition to check for label *) {
-        // Extract label and process it
-        // Insert label into symbol table with CODE property
-        // Update IC accordingly
-    }
-    // Additional logic for processing code directives
-//} */
 
 void freeSymbolTable(Symbol *symbolTable) {
     if (symbolTable == NULL) {
@@ -377,130 +352,105 @@ void freeOutputLines(OutputLines *outputLines) {
     }
 }
 
-void freeDecodedLines(DecodedLines *decodedLines) {
-    if (decodedLines == NULL) {
-        return;  // Decoded lines are already empty
-    }
 
-    DecodedLines *tempDecodedLine;
-    while (decodedLines != NULL) {
-        tempDecodedLine = decodedLines;
-        decodedLines = decodedLines->next;  // Update head pointer correctly
-        free(tempDecodedLine);
-    }
-}
 
-void addLineToDecodedLines(DecodedLines** current_decoded_line, int src_line, int output_line, int is_decoded){
-    DecodedLines* current = *current_decoded_line;
-    current->src_line_number = src_line;
-    current->output_line_number = output_line;
-    current->is_decoded = 1;
-    current->next = (DecodedLines*)malloc(sizeof(DecodedLines));
-        if (current->next == NULL) {
-            error_output(FAILED_TO_ALLOCATE_MEMORY);
-        }
-    current = current->next;
-    current->src_line_number = -1;
-    *current_decoded_line = current;
-}
-
-void processCodeDirective(char *line, Symbol **symbolTable, int *IC, int* src_line, char* first_word, int tag_flag, OutputLines** data_output, DecodedLines** current_decoded_line){
+void processCodeDirective(char *line, Symbol **symbolTable, int *IC, int* src_line, char* first_word, int tag_flag, OutputLines** data_output){
     if(strcmp(first_word, "mov") == 0){
-        processMov(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+        processMov(line, symbolTable, IC, src_line, data_output);
     } else if(strcmp(first_word, "cmp") == 0){
-        processCmp(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+        processCmp(line, symbolTable, IC, src_line, data_output);
     } else if(strcmp(first_word, "add") == 0){
-        processAdd(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+        processAdd(line, symbolTable, IC, src_line, data_output);
     } else if(strcmp(first_word, "sub") == 0){
-        processSub(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+        processSub(line, symbolTable, IC, src_line, data_output);
     } else if(strcmp(first_word, "not") == 0){
-        processNot(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+        processNot(line, symbolTable, IC, src_line, data_output);
     } else if(strcmp(first_word, "clr") == 0){
-        processClr(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+        processClr(line, symbolTable, IC, src_line, data_output);
     } else if(strcmp(first_word, "lea") == 0){
-        processLea(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+        processLea(line, symbolTable, IC, src_line, data_output);
     } else if(strcmp(first_word, "inc") == 0){
-        processInc(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+        processInc(line, symbolTable, IC, src_line, data_output);
     } else if(strcmp(first_word, "dec") == 0){
-        processDec(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+        processDec(line, symbolTable, IC, src_line, data_output);
     } else if(strcmp(first_word, "jmp") == 0){
-        processJmp(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+        processJmp(line, symbolTable, IC, src_line, data_output);
     } else if(strcmp(first_word, "bne") == 0){
-        processBne(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+        processBne(line, symbolTable, IC, src_line, data_output);
     } else if(strcmp(first_word, "red") == 0){
-        processRed(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+        processRed(line, symbolTable, IC, src_line, data_output);
     } else if(strcmp(first_word, "prn") == 0){
-        processPrn(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+        processPrn(line, symbolTable, IC, src_line, data_output);
     } else if(strcmp(first_word, "jsr") == 0){
-        processJsr(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+        processJsr(line, symbolTable, IC, src_line, data_output);
     } else if(strcmp(first_word, "rts") == 0){
-        processRts(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+        processRts(line, symbolTable, IC, src_line, data_output);
     } else if(strcmp(first_word, "hlt") == 0){
-        processHlt(line, symbolTable, IC, src_line, data_output, current_decoded_line);
+        processHlt(line, symbolTable, IC, src_line, data_output);
     }
 }
 
-void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
 
 }
 
-void processCmp(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+void processCmp(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
 
 }
 
-void processAdd(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+void processAdd(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
 
 }
 
-void processSub(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+void processSub(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
 
 }
 
-void processNot(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+void processNot(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
 
 }
 
-void processClr(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+void processClr(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
 
 }
 
-void processLea(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+void processLea(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
 
 }
 
-void processInc(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+void processInc(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
 
 }
 
-void processDec(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+void processDec(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
 
 }
 
-void processJmp(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+void processJmp(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
 
 }
 
-void processBne(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+void processBne(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
 
 }
 
-void processRed(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+void processRed(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
 
 }
 
-void processPrn(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+void processPrn(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
 
 }
 
-void processJsr(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+void processJsr(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
 
 }
 
-void processRts(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+void processRts(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
 
 }
 
-void processHlt(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output, DecodedLines** current_decoded_line){
+void processHlt(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
 
 }
 
@@ -508,10 +458,9 @@ void processHlt(char* line, Symbol** symbolTable, int* IC, int* src_line, Output
 void writeDataToFile(OutputLines* data_output_head, FILE* output_file_ptr) {
     OutputLines* current = data_output_head;
 
-    while (current != NULL) {
+    while (current->firstLine != NULL) {
         // Assuming data is a null-terminated string
-        fprintf(output_file_ptr, "%s", current->data);
+        fprintf(output_file_ptr, "%s", current->firstLine->text);
         current = current->next;
     }
 }
-// Additional supporting functions and logic can be added here/* Test Cases for Assembler Algorithm */#include <assert.h>/* Function to Test Symbol Table Insertion */void testSymbolTableInsertion() {    Symbol symbolTable = NULL;    assert(insertIntoSymbolTable(&symbolTable, "LABEL1", 100, DATA) == 1); // Successful insertion    assert(insertIntoSymbolTable(&symbolTable, "LABEL1", 100, DATA) == 0); // Duplicate symbol    // Add more test cases as needed}/* Function to Test Process Define Statement */void testProcessDefineStatement() {    Symbol symbolTable = NULL;    char line[] = "define PI 3";    processDefineStatement(line, &symbolTable);    // Add assertions to validate the symbol table contents    // Add more test cases as needed}/* Function to Test Process Data Directives */void testProcessDataDirectives() {    // Add test cases for processing .data and .string directives    // Validate the DC updates and symbol table contents}/* Function to Test Process Code Directives */void testProcessCodeDirectives() {    // Add test cases for processing .extern, .entry, and instruction lines    // Validate the IC updates and symbol table contents}/* Main Function to Run Tests */int main() {    testSymbolTableInsertion();    testProcessDefineStatement();    testProcessDataDirectives();    testProcessCodeDirectives();    printf("All tests passed successfully!\n");    return 0;}// Add more tests and final touches as needed/* Complete Logic of processDataDirectives */void processDataDirectives(char *line, Symbol *symbolTable, int *DC) {    char label[MAX_MACRO_NAME_LENGTH];    // Example condition to check for a label (this should be adjusted based on the actual file format)    if (sscanf(line, "%s", label) == 1) {        // Insert label into symbol table with DATA property        insertIntoSymbolTable(symbolTable, label, *DC, DATA);        // Update DC accordingly based on the data encoded        // Logic to encode data and update DC    }    // Additional logic for processing data directives}/* Complete Logic of processCodeDirectives */void processCodeDirectives(char *line, Symbol *symbolTable, int *IC) {    char label[MAX_MACRO_NAME_LENGTH];    // Example condition to check for a label (this should be adjusted based on the actual file format)    if (sscanf(line, "%s", label) == 1) {        // Insert label into symbol table with CODE property        insertIntoSymbolTable(symbolTable, label, *IC + 100, CODE);        // Update IC accordingly based on the instruction encoded        // Logic to encode instruction and update IC    }    // Additional logic for processing code directives}// Additional supporting functions and logic can be added here
