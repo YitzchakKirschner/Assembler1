@@ -15,6 +15,10 @@ int main(int argc, char* argv[]){
     FILE* output_file_ptr;
     MacroNode **macro_head = (MacroNode **)malloc(sizeof(MacroNode)); /*List of macros*/
     Symbol **symbolTable = (Symbol **)malloc(sizeof(Symbol));
+    if(!macro_head || !symbolTable){
+        error_output(3);
+        return 0;
+    }
     int IC; /* Instruction Count */
     int DC; /* Data Count */
     char as_file_name[MAX_FILE_NAME_LENGTH];

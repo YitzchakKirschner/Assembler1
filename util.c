@@ -16,3 +16,15 @@ int countLinesInFile(FILE* file) {
     return count;
 }
 
+void toBinary(int number, int n, char *binary, int useTwosComplement) {
+    if (useTwosComplement) {
+        // Calculate 2's complement for negative numbers
+        number = (1 << n) + number;
+    }
+
+    for (int i = n - 1; i >= 0; i--) {
+        binary[i] = (number & 1) ? '1' : '0';
+        number >>= 1;
+    }
+    binary[n] = '\0'; // Null-terminate the string
+}

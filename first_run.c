@@ -72,36 +72,36 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
 
         if (strcmp(first_word, ".define") == 0) {
             processDefineStatement(line, symbolTable, macro_head);
-        }
+        } else {
         
-        if (isTag(first_word, macro_head)) {
-            tag_flag = 1;
-        } else {
-            tag_flag = 0;
+            if (isTag(first_word, macro_head)) {
+                tag_flag = 1;
+            } else {
+                tag_flag = 0;
+            }
+
+            /*make second word the first not-tag-word*/
+            if(!tag_flag){ 
+                strcpy(second_word, first_word);
+            } else {
+                getWordAtIndex(line, second_word, 2);
+            }
+
+            if(strcmp(second_word, ".data") == 0){
+                processDataDirective(line, symbolTable, &DC, &src_line, DATA_CODE, first_word, tag_flag, data_output);
+            } else if(strcmp(second_word, ".string") == 0){
+                processDataDirective(line, symbolTable, &DC, &src_line, STRING_CODE, first_word, tag_flag, data_output);
+            } /*else if(strcmp(second_word, ".entry") == 0){
+                processCodeDirectives(line, symbolTable, &IC);
+            } else if(strcmp(second_word, ".extern") == 0){
+                processCodeDirectives(line, symbolTable, &IC);
+            } else {
+                processCodeDirectives(line, symbolTable, &IC);
+            }*/
+
+            else
+                processCodeDirective(line, symbolTable, &IC, &src_line, first_word, tag_flag, instruction_output, &data_output_head);
         }
-
-        /*make second word the first not-tag-word*/
-        if(!tag_flag){ 
-            strcpy(second_word, first_word);
-        } else {
-            getWordAtIndex(line, second_word, 2);
-        }
-
-        if(strcmp(second_word, ".data") == 0){
-            processDataDirective(line, symbolTable, &DC, &src_line, DATA_CODE, first_word, tag_flag, data_output);
-        } else if(strcmp(second_word, ".string") == 0){
-            processDataDirective(line, symbolTable, &DC, &src_line, STRING_CODE, first_word, tag_flag, data_output);
-        } /*else if(strcmp(second_word, ".entry") == 0){
-            processCodeDirectives(line, symbolTable, &IC);
-        } else if(strcmp(second_word, ".extern") == 0){
-            processCodeDirectives(line, symbolTable, &IC);
-        } else {
-            processCodeDirectives(line, symbolTable, &IC);
-        }*/
-
-        else
-            processCodeDirective(line, symbolTable, &IC, &src_line, first_word, tag_flag, instruction_output);
-
         src_line++;
 
     }
@@ -125,7 +125,7 @@ void processDefineStatement(char *line, Symbol **symbolTable, MacroNode* macro_h
     // Insert into symbol table with MDEFINE property
     /* check the name doesn't appear in the symbol table yet */
     while(*current_symbol){
-        if(!strcmp((*current_symbol)->name, name)){
+        if(findSymbol(*symbolTable, name, 5)){
             error_output(7);
         }
         current_symbol = &(*current_symbol)->next;
@@ -133,24 +133,45 @@ void processDefineStatement(char *line, Symbol **symbolTable, MacroNode* macro_h
 
     if(findMacro(macro_head, name))
         error_output(9);
+
     insertIntoSymbolTable(current_symbol, name, value, MDEFINE);
 }
 
+Symbol* findSymbol(Symbol* symbolTable, char* name, int type){
+    Symbol* current_symbol = symbolTable;
+    while(current_symbol){
+        if(!strcmp(current_symbol->name, name) && ((current_symbol->type == type) || type == 5)){
+            return current_symbol;
+        }
+        current_symbol = current_symbol->next;
+    }
+    return NULL;
+}
+
+
+
 void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_line, int data_type, char* first_word, int tag_flag, OutputLines** data_output) {
     char command_name[MAX_MACRO_NAME_LENGTH];
-    Symbol* current_symbol = malloc(sizeof(Symbol));
-    current_symbol = *symbolTable;
-    if(tag_flag){
+    Symbol** current_symbol = symbolTable;
+    if (tag_flag) {
+        // Check and remove the trailing colon from first_word
+        size_t len = strlen(first_word);
+        if (len > 0 && first_word[len - 1] == ':') {
+            first_word[len - 1] = '\0';  // Remove the trailing colon by setting it to null terminator
+        }
+
         // Insert into symbol table with DATA property
         /* check the name doesn't appear in the symbol table yet */
-        while(current_symbol){
-            if(!strcmp((current_symbol)->name, first_word)){
-                error_output(7);
+        while (*current_symbol) {
+            if (!strcmp((*current_symbol)->name, first_word)) {
+                error_output(7); // Assuming error_output(7) handles duplicate symbol names
+                return;  // Optional: return from function if error occurs
             }
-            current_symbol = current_symbol->next;
+            current_symbol = &((*current_symbol)->next);
         }
-        insertIntoSymbolTable(&current_symbol, first_word, *DC, DATA);
+        insertIntoSymbolTable(current_symbol, first_word, *DC, DATA);
     }
+
 
     if(data_type == DATA_CODE){  
         writeBinaryNumbersToDataSegment(data_output, strstr(line, ".data") + 5, DC);
@@ -230,7 +251,7 @@ void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numb
     // Walk through other tokens
     while (token != NULL) {
 
-        outputText *newOutputText = (outputText *)malloc(sizeof(outputText));
+        OutputText *newOutputText = (OutputText *)malloc(sizeof(OutputText));
         if (!newOutputText) { /* Handle memory allocation error*/
             error_output(4);
             return;
@@ -248,7 +269,7 @@ void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numb
         binary[14] = '\n';  // Null-terminate the binary string
         binary[15] = '\0';  // Null-terminate the binary string
 
-        current->input_line_number = *DC;
+        newOutputText->output_line_number = *DC;
         strcpy(newOutputText->text, binary);
         current->firstLine = newOutputText;
         current->is_decoded = 1;
@@ -284,7 +305,7 @@ void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, i
         if (insideQuotes) {
             for (int j = 0; j < strlen(token); j++) {
 
-                outputText *newOutputText = (outputText *)malloc(sizeof(outputText));
+                OutputText *newOutputText = (OutputText *)malloc(sizeof(OutputText));
                 if (!newOutputText) { /* Handle memory allocation error*/
                     error_output(4);
                     return;
@@ -301,7 +322,7 @@ void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, i
                 binary[14] = '\n';  // Null-terminate the binary string
                 binary[15] = '\0';  // Null-terminate the binary string
 
-                current->input_line_number = *DC;
+                newOutputText->output_line_number = *DC;
                 current->is_decoded = 1;
                 strcpy(newOutputText->text, binary);
                 current->firstLine = newOutputText;
@@ -354,103 +375,172 @@ void freeOutputLines(OutputLines *outputLines) {
 
 
 
-void processCodeDirective(char *line, Symbol **symbolTable, int *IC, int* src_line, char* first_word, int tag_flag, OutputLines** data_output){
+void processCodeDirective(char *line, Symbol **symbolTable, int *IC, int* src_line, char* first_word, int tag_flag, OutputLines** instruction_output, OutputLines** data_output){
     if(strcmp(first_word, "mov") == 0){
-        processMov(line, symbolTable, IC, src_line, data_output);
+        processMov(line, symbolTable, IC, src_line, instruction_output, data_output);
     } else if(strcmp(first_word, "cmp") == 0){
-        processCmp(line, symbolTable, IC, src_line, data_output);
+        processCmp(line, symbolTable, IC, src_line, instruction_output, data_output);
     } else if(strcmp(first_word, "add") == 0){
-        processAdd(line, symbolTable, IC, src_line, data_output);
+        processAdd(line, symbolTable, IC, src_line, instruction_output, data_output);
     } else if(strcmp(first_word, "sub") == 0){
-        processSub(line, symbolTable, IC, src_line, data_output);
+        processSub(line, symbolTable, IC, src_line, instruction_output, data_output);
     } else if(strcmp(first_word, "not") == 0){
-        processNot(line, symbolTable, IC, src_line, data_output);
+        processNot(line, symbolTable, IC, src_line, instruction_output, data_output);
     } else if(strcmp(first_word, "clr") == 0){
-        processClr(line, symbolTable, IC, src_line, data_output);
+        processClr(line, symbolTable, IC, src_line, instruction_output, data_output);
     } else if(strcmp(first_word, "lea") == 0){
-        processLea(line, symbolTable, IC, src_line, data_output);
+        processLea(line, symbolTable, IC, src_line, instruction_output, data_output);
     } else if(strcmp(first_word, "inc") == 0){
-        processInc(line, symbolTable, IC, src_line, data_output);
+        processInc(line, symbolTable, IC, src_line, instruction_output, data_output);
     } else if(strcmp(first_word, "dec") == 0){
-        processDec(line, symbolTable, IC, src_line, data_output);
+        processDec(line, symbolTable, IC, src_line, instruction_output, data_output);
     } else if(strcmp(first_word, "jmp") == 0){
-        processJmp(line, symbolTable, IC, src_line, data_output);
+        processJmp(line, symbolTable, IC, src_line, instruction_output, data_output);
     } else if(strcmp(first_word, "bne") == 0){
-        processBne(line, symbolTable, IC, src_line, data_output);
+        processBne(line, symbolTable, IC, src_line, instruction_output, data_output);
     } else if(strcmp(first_word, "red") == 0){
-        processRed(line, symbolTable, IC, src_line, data_output);
+        processRed(line, symbolTable, IC, src_line, instruction_output, data_output);
     } else if(strcmp(first_word, "prn") == 0){
-        processPrn(line, symbolTable, IC, src_line, data_output);
+        processPrn(line, symbolTable, IC, src_line, instruction_output, data_output);
     } else if(strcmp(first_word, "jsr") == 0){
-        processJsr(line, symbolTable, IC, src_line, data_output);
+        processJsr(line, symbolTable, IC, src_line, instruction_output, data_output);
     } else if(strcmp(first_word, "rts") == 0){
-        processRts(line, symbolTable, IC, src_line, data_output);
+        processRts(line, symbolTable, IC, src_line, instruction_output, data_output);
     } else if(strcmp(first_word, "hlt") == 0){
-        processHlt(line, symbolTable, IC, src_line, data_output);
+        processHlt(line, symbolTable, IC, src_line, instruction_output, data_output);
     }
 }
 
-void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
+void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
+    OutputLines* current = *instruction_output;  // Create a temporary pointer to traverse the list
+    Symbol* found_symbol;
+    char tempLine[82];  // Temporary numbers buffer
+    char src_word[MAX_MACRO_NAME_LENGTH];
+    char src_ARE[3];
+    char dst_ARE[3];
+    char* token;
+    char* src_bin_word;
+
+    OutputText *newOutputText = (OutputText *)malloc(sizeof(OutputText));
+    if (!newOutputText) { /* Handle memory allocation error*/
+        error_output(4);
+        return;
+    }
+    newOutputText->next = NULL; 
+
+    strcpy(current->opcode, "0000");
+
+    // Copy numbers to tempNumbers so strtok doesn't modify original string
+    strcpy(tempLine, line);
+
+    getWordAtIndex(tempLine, src_word, 2);
+
+    found_symbol  = findSymbol(*symbolTable, src_word, 5);
+
+    // Get the first token
+    token = strtok(tempLine, " \t");
+
+    if (token[0] == '#'){
+        strcpy(src_ARE, "00");
+        strcpy(current->src_operand, "00");
+
+        src_bin_word = (char *)malloc(13);
+        if (!src_bin_word) { /* Handle memory allocation error*/
+            error_output(4);
+            return;
+        }
+
+        toBinary(atoi(token + 1), 12, src_bin_word, 1);
+    } else if (found_symbol && found_symbol->type == MDEFINE){
+        strcpy(src_ARE, "00");
+        strcpy(current->src_operand, "00");
+
+        src_bin_word = (char *)malloc(13);
+        if (!src_bin_word) { /* Handle memory allocation error*/
+            error_output(4);
+            return;
+        }
+
+        toBinary(found_symbol->value, 12, src_bin_word, 1);
+    } else if (found_symbol && found_symbol->type == DATA){
+        src_bin_word = (char *)malloc(13);
+        if (!src_bin_word) { /* Handle memory allocation error*/
+            error_output(4);
+            return;
+        }
+
+        OutputLines* current_data_output = *data_output; 
+        strcpy(src_ARE, "01");
+        strcpy(current->src_operand, "01");
+        while(current_data_output->firstLine->output_line_number != found_symbol->value){
+            current_data_output = current_data_output->next;
+        }
+        strcpy(src_bin_word, current_data_output->firstLine->text);
+    } else if (found_symbol && found_symbol->type == EXTERN){
+        strcpy(src_ARE, "10");
+        strcpy(current->src_operand, "01");
+    } 
+
+    free(newOutputText);
+}
+
+void processCmp(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
 
 }
 
-void processCmp(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
+void processAdd(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
 
 }
 
-void processAdd(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
+void processSub(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
 
 }
 
-void processSub(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
+void processNot(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
 
 }
 
-void processNot(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
+void processClr(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
 
 }
 
-void processClr(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
+void processLea(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
 
 }
 
-void processLea(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
+void processInc(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
 
 }
 
-void processInc(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
+void processDec(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
 
 }
 
-void processDec(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
+void processJmp(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
 
 }
 
-void processJmp(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
+void processBne(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
 
 }
 
-void processBne(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
+void processRed(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
 
 }
 
-void processRed(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
+void processPrn(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
 
 }
 
-void processPrn(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
+void processJsr(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
 
 }
 
-void processJsr(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
+void processRts(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
 
 }
 
-void processRts(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
-
-}
-
-void processHlt(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** data_output){
+void processHlt(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
 
 }
 
