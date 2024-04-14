@@ -54,4 +54,5 @@ CMakeFiles/assembler.dir/main.c.o: \
  /home/yitzchok/Desktop/Assembler1/macro_extracter.h \
  /home/yitzchok/Desktop/Assembler1/saved_words.h \
  /home/yitzchok/Desktop/Assembler1/errors.h \
- /home/yitzchok/Desktop/Assembler1/first_run.h
+ /home/yitzchok/Desktop/Assembler1/first_run.h \
+ /home/yitzchok/Desktop/Assembler1/util.h

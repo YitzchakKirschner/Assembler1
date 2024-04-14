@@ -1,8 +1,8 @@
 tag: .data 2,3,1 ,   1
 .string "01234" 
-.define len = 4
+.define len = 10
 try: .data 4,  5 ,   8,  0, 1
-mov try
+mov try[2]
 mcr 1
 AAAAAAAAAAAAAA
 BBBBBBBBBBBBBB

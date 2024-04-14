@@ -6,7 +6,7 @@
 #include "macro_extracter.h"
 #include "errors.h"
 #include "first_run.h"
-#include "util.h"
+
 
 
 #define MAX_TAG_LENGTH 31
@@ -135,17 +135,6 @@ void processDefineStatement(char *line, Symbol **symbolTable, MacroNode* macro_h
         error_output(9);
 
     insertIntoSymbolTable(current_symbol, name, value, MDEFINE);
-}
-
-Symbol* findSymbol(Symbol* symbolTable, char* name, int type){
-    Symbol* current_symbol = symbolTable;
-    while(current_symbol){
-        if(!strcmp(current_symbol->name, name) && ((current_symbol->type == type) || type == 5)){
-            return current_symbol;
-        }
-        current_symbol = current_symbol->next;
-    }
-    return NULL;
 }
 
 
@@ -420,6 +409,8 @@ void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, Output
     char dst_ARE[3];
     char* token;
     char* src_bin_word;
+    char* constArr;
+    int extractedNumber = -1;
 
     OutputText *newOutputText = (OutputText *)malloc(sizeof(OutputText));
     if (!newOutputText) { /* Handle memory allocation error*/
@@ -436,6 +427,8 @@ void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, Output
     getWordAtIndex(tempLine, src_word, 2);
 
     found_symbol  = findSymbol(*symbolTable, src_word, 5);
+
+    constArr =  removeBracketedNumber(src_word, &extractedNumber, symbolTable);
 
     // Get the first token
     token = strtok(tempLine, " \t");
@@ -463,6 +456,7 @@ void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, Output
 
         toBinary(found_symbol->value, 12, src_bin_word, 1);
     } else if (found_symbol && found_symbol->type == DATA){
+        int textLength;
         src_bin_word = (char *)malloc(13);
         if (!src_bin_word) { /* Handle memory allocation error*/
             error_output(4);
@@ -472,10 +466,36 @@ void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, Output
         OutputLines* current_data_output = *data_output; 
         strcpy(src_ARE, "01");
         strcpy(current->src_operand, "01");
+
         while(current_data_output->firstLine->output_line_number != found_symbol->value){
             current_data_output = current_data_output->next;
         }
-        strcpy(src_bin_word, current_data_output->firstLine->text);
+        textLength = strlen(current_data_output->firstLine->text);
+        // Copy the last 12 characters of the text
+        strcpy(src_bin_word, current_data_output->firstLine->text + (textLength - 13));
+        src_bin_word[12] = '\0';  // Null-terminate the string
+    } else if (constArr && (extractedNumber != -1)){
+        found_symbol = findSymbol(*symbolTable, constArr, DATA);
+        if(found_symbol){
+            int textLength;
+            src_bin_word = (char *)malloc(13);
+            if (!src_bin_word) { /* Handle memory allocation error*/
+                error_output(4);
+                return;
+            }
+
+            OutputLines* current_data_output = *data_output; 
+            strcpy(src_ARE, "01");
+            strcpy(current->src_operand, "10");
+
+            while(current_data_output->firstLine->output_line_number != (found_symbol->value + extractedNumber)){
+                current_data_output = current_data_output->next;
+            }
+            textLength = strlen(current_data_output->firstLine->text);
+            // Copy the last 12 characters of the text
+            strcpy(src_bin_word, current_data_output->firstLine->text + (textLength - 13));
+            src_bin_word[12] = '\0';  // Null-terminate the string
+        }
     } else if (found_symbol && found_symbol->type == EXTERN){
         strcpy(src_ARE, "10");
         strcpy(current->src_operand, "01");

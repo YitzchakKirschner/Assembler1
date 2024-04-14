@@ -1,10 +1,11 @@
-/* Symbol Table Entry Structure */
-typedef struct Symbol {
-    char name[MAX_MACRO_NAME_LENGTH]; // Symbol name
-    int value;                        // Value of the symbol
-    enum { MDEFINE, DATA, CODE, EXTERN } type; // Type of the symbol
-    struct Symbol *next;              // Pointer to the next symbol
-} Symbol;
+// /* Symbol Table Entry Structure */
+// typedef struct Symbol {
+//     char name[MAX_MACRO_NAME_LENGTH]; // Symbol name
+//     int value;                        // Value of the symbol
+//     enum { MDEFINE, DATA, CODE, EXTERN } type; // Type of the symbol
+//     struct Symbol *next;              // Pointer to the next symbol
+// } Symbol;
+#include "util.h"
 
 typedef struct OutputText {
     char text[MAX_LINE_LENGTH_PLUS_1];
@@ -27,7 +28,7 @@ typedef struct OutputLines {
 
 FILE* firstRun(FILE* as_file_ptr, char* file_name, Symbol **symbolTable, MacroNode* macros, int IC, int DC);
 void processDefineStatement(char *line, Symbol **symbolTable, MacroNode* macro_head);
-Symbol* findSymbol(Symbol* symbolTable, char* name, int type);
+//Symbol* findSymbol(Symbol* symbolTable, char* name, int type);
 void processDataDirective(char *line, Symbol **symbolTable, int *DC, int* src_line, int data_type, char* first_word, int tag_flag, OutputLines** data_output);
 void insertIntoSymbolTable(Symbol **current_symbol, char *name, int value, int type);
 void freeSymbolTable(Symbol *symbolTable);
