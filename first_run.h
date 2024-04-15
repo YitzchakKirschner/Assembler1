@@ -1,21 +1,7 @@
 
 #include "util.h"
 
-typedef struct OutputText {
-    char text[15];
-    int output_line_number;
-    struct OutputText *next;
-} OutputText;
 
-/* Simple Data Structure */
-typedef struct OutputLines {
-    OutputText *firstLine;  /* Pointer to the first line*/
-    int is_decoded;            // Flag indicating if the data is used
-    char src_operand[3];
-    char dest_operand[3];
-    char opcode[5];               // Opcode
-    struct OutputLines* next;    // Pointer to the next data structure
-} OutputLines;
 
 
 

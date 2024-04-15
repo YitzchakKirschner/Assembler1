@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include "util.h"
+#include "errors.h"
 
 
 int countLinesInFile(FILE* file) {
@@ -106,6 +107,86 @@ Symbol* findSymbol(Symbol* symbolTable, char* name, int type){
     return NULL;
 }
 
+void addInstrctionLine(OutputLines* current, OutputText* newOutputText, int* IC, char* src_bin_word, char* dst_bin_word, char* src_ARE, char* dst_ARE, int srcExtractedNumber, int dstExtractedNumber){
+    strcpy(&newOutputText->text[0], "0000");
+    strcpy(&newOutputText->text[4], current->opcode);
+    strcpy(&newOutputText->text[8], current->src_operand);
+    strcpy(&newOutputText->text[10], current->dest_operand);
+    strcpy(&newOutputText->text[12], "00");
+    strcpy(&newOutputText->text[14], "\0");
+    newOutputText->output_line_number = *IC;
+    (*IC)++;
+
+    newOutputText->next = (OutputText *)malloc(sizeof(OutputText));
+    if (!newOutputText->next) { /* Handle memory allocation error*/
+        error_output(4);
+        return;
+    }
+    newOutputText = newOutputText->next;
+
+    if((strlen(src_bin_word) > 4) || (strlen(dst_bin_word) > 8)){
+        if(strlen(src_bin_word) > 4){
+            strcpy(&newOutputText->text[0], src_bin_word);
+        } else{
+            strcpy(&newOutputText->text[0], "000000");
+            strcpy(&newOutputText->text[6], src_bin_word);
+            strcpy(&newOutputText->text[9], "00000\0");
+        }
+        strcpy(&newOutputText->text[12], src_ARE);
+        strcpy(&newOutputText->text[14], "\0");
+        newOutputText->output_line_number = *IC;
+        (*IC)++;
+        if(srcExtractedNumber != -1){
+            newOutputText->next = (OutputText *)malloc(sizeof(OutputText));
+            if (!newOutputText->next) { /* Handle memory allocation error*/
+                error_output(4);
+                return;
+            }
+            newOutputText = newOutputText->next;
+            toBinary(srcExtractedNumber, 12, newOutputText->text, 0);
+            strcpy(&newOutputText->text[12], "00\0"); 
+            newOutputText->output_line_number = *IC;
+            (*IC)++;
+        }
+
+        newOutputText->next = (OutputText *)malloc(sizeof(OutputText));
+        if (!newOutputText->next) { /* Handle memory allocation error*/
+            error_output(4);
+            return;
+        }
+        newOutputText = newOutputText->next;
+        if(strlen(dst_bin_word) > 4){
+            strcpy(&newOutputText->text[0], dst_bin_word);
+        } else{
+            strcpy(&newOutputText->text[0], "000000000");
+            strcpy(&newOutputText->text[9], dst_bin_word);
+        }
+        strcpy(&newOutputText->text[12], dst_ARE);
+        strcpy(&newOutputText->text[14], "\0");
+        newOutputText->output_line_number = *IC;
+        (*IC)++;
+        if(dstExtractedNumber != -1){
+            newOutputText->next = (OutputText *)malloc(sizeof(OutputText));
+            if (!newOutputText->next) { /* Handle memory allocation error*/
+                error_output(4);
+                return;
+            }
+            newOutputText = newOutputText->next;
+            toBinary(dstExtractedNumber, 12, newOutputText->text, 0);
+            strcpy(&newOutputText->text[12], "00\0"); 
+            newOutputText->output_line_number = *IC;
+            (*IC)++;
+        }
+    } else {
+        strcpy(&newOutputText->text[0], "000000");
+        strcpy(&newOutputText->text[6], src_bin_word);
+        strcpy(&newOutputText->text[9], dst_bin_word);
+        strcpy(&newOutputText->text[12], "00\0");
+        newOutputText->output_line_number = *IC;
+        (*IC)++;
+    }
+}
+
 char* getRegisterByName(char* name){
     if(!strcmp(name, "r0")){
         return "000";
@@ -125,5 +206,20 @@ char* getRegisterByName(char* name){
         return "111";
     } else {
         return NULL;
+    }
+}
+
+void freeInstruction(OutputLines* instruction_output){
+    OutputLines* current = instruction_output;
+    while(current){
+        OutputLines* temp = current;
+        current = current->next;
+        while (temp->firstLine)
+        {
+            OutputText* temp2 = temp->firstLine;
+            temp->firstLine = temp->firstLine->next;
+            free(temp2);
+        }
+        free(temp);
     }
 }

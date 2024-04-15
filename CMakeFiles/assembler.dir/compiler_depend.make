@@ -369,7 +369,8 @@ CMakeFiles/assembler.dir/util.c.o: util.c \
   /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h \
   /usr/include/alloca.h \
   /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
-  util.h
+  util.h \
+  errors.h
 
 
 util.c:
