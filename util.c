@@ -108,21 +108,21 @@ Symbol* findSymbol(Symbol* symbolTable, char* name, int type){
 
 char* getRegisterByName(char* name){
     if(!strcmp(name, "r0")){
-        return "0000000";
+        return "000";
     } else if(!strcmp(name, "r1")){
-        return "0000001";
+        return "001";
     } else if(!strcmp(name, "r2")){
-        return "0000010";
+        return "010";
     } else if(!strcmp(name, "r3")){
-        return "0000011";
+        return "011";
     } else if(!strcmp(name, "r4")){
-        return "0000100";
+        return "100";
     } else if(!strcmp(name, "r5")){
-        return "0000101";
+        return "101";
     } else if(!strcmp(name, "r6")){
-        return "0000110";
+        return "110";
     } else if(!strcmp(name, "r7")){
-        return "0000111";
+        return "111";
     } else {
         return NULL;
     }

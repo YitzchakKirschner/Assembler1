@@ -417,10 +417,13 @@ void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, Output
     char* dst_bin_word;
     char* bin_word;
 
+    int srcExtractedNumber = -1;
+    int dstExtractedNumber = -1;
+    int extractedNumber;
+
     char* token;
     char* constArr;
     int i;
-    int extractedNumber = -1;
 
     OutputText *newOutputText = (OutputText *)malloc(sizeof(OutputText));
     if (!newOutputText) { /* Handle memory allocation error*/
@@ -428,6 +431,7 @@ void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, Output
         return;
     }
     newOutputText->next = NULL; 
+    current->firstLine = newOutputText;
 
     strcpy(current->opcode, "0000");
 
@@ -441,18 +445,20 @@ void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, Output
         if(i == 0){
             strcpy(word, src_word);
             strcpy(ARE, src_ARE);
-            strcpy(bin_word, src_bin_word);
+            extractedNumber = srcExtractedNumber;
+            // strcpy(bin_word, src_bin_word);
         } else {
             strcpy(word, dst_word);
             strcpy(ARE, dst_ARE);
-            strcpy(bin_word, dst_bin_word);
+            extractedNumber = dstExtractedNumber;
+            // strcpy(bin_word, dst_bin_word);
         }
         found_symbol  = findSymbol(*symbolTable, word, 5);
 
         constArr =  removeBracketedNumber(word, &extractedNumber, symbolTable);
 
         // Get the first token
-        token = strtok(tempLine, " \t");
+        token = strtok(tempLine, ", \t");
 
         if (token[0] == '#'){
             strcpy(ARE, "00");
@@ -530,7 +536,7 @@ void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, Output
                 bin_word[12] = '\0';  // Null-terminate the string
             }
         } else if(getRegisterByName(word)){
-            bin_word = (char *)malloc(8);
+            bin_word = (char *)malloc(4);
             if (!bin_word) { /* Handle memory allocation error*/
                 error_output(4);
                 return;
@@ -551,12 +557,103 @@ void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, Output
 
         if (i == 0){
             strcpy(src_ARE, ARE);
+            src_bin_word = (char *)malloc(13);
+            if (!src_bin_word) { /* Handle memory allocation error*/
+                error_output(4);
+                return;
+            }
             strcpy(src_bin_word, bin_word);
+            srcExtractedNumber = extractedNumber;
         } else {
             strcpy(dst_ARE, ARE);
+            dst_bin_word = (char *)malloc(13);
+            if (!dst_bin_word) { /* Handle memory allocation error*/
+                error_output(4);
+                return;
+            }
             strcpy(dst_bin_word, bin_word);
+            dstExtractedNumber = extractedNumber;
         }
     }
+    strcpy(&newOutputText->text[0], "0000");
+    strcpy(&newOutputText->text[4], current->opcode);
+    strcpy(&newOutputText->text[8], current->src_operand);
+    strcpy(&newOutputText->text[10], current->dest_operand);
+    strcpy(&newOutputText->text[12], "00");
+    strcpy(&newOutputText->text[14], "\0");
+    newOutputText->output_line_number = *IC;
+    (*IC)++;
+
+    newOutputText->next = (OutputText *)malloc(sizeof(OutputText));
+    if (!newOutputText->next) { /* Handle memory allocation error*/
+        error_output(4);
+        return;
+    }
+    newOutputText = newOutputText->next;
+
+    if((strlen(src_bin_word) > 4) || (strlen(dst_bin_word) > 8)){
+        if(strlen(src_bin_word) > 4){
+            strcpy(&newOutputText->text[0], src_bin_word);
+        } else{
+            strcpy(&newOutputText->text[0], "000000");
+            strcpy(&newOutputText->text[6], src_bin_word);
+            strcpy(&newOutputText->text[9], "00000\0");
+        }
+        strcpy(&newOutputText->text[12], src_ARE);
+        strcpy(&newOutputText->text[14], "\0");
+        newOutputText->output_line_number = *IC;
+        (*IC)++;
+        if(srcExtractedNumber != -1){
+            newOutputText->next = (OutputText *)malloc(sizeof(OutputText));
+            if (!newOutputText->next) { /* Handle memory allocation error*/
+                error_output(4);
+                return;
+            }
+            newOutputText = newOutputText->next;
+            toBinary(extractedNumber, 12, newOutputText->text, 0);
+            strcpy(&newOutputText->text[12], "00\0"); 
+            newOutputText->output_line_number = *IC;
+            (*IC)++;
+        }
+
+        newOutputText->next = (OutputText *)malloc(sizeof(OutputText));
+        if (!newOutputText->next) { /* Handle memory allocation error*/
+            error_output(4);
+            return;
+        }
+        newOutputText = newOutputText->next;
+        if(strlen(dst_bin_word) > 4){
+            strcpy(&newOutputText->text[0], dst_bin_word);
+        } else{
+            strcpy(&newOutputText->text[0], "000000000");
+            strcpy(&newOutputText->text[9], dst_bin_word);
+        }
+        strcpy(&newOutputText->text[12], dst_ARE);
+        strcpy(&newOutputText->text[14], "\0");
+        newOutputText->output_line_number = *IC;
+        (*IC)++;
+        if(dstExtractedNumber != -1){
+            newOutputText->next = (OutputText *)malloc(sizeof(OutputText));
+            if (!newOutputText->next) { /* Handle memory allocation error*/
+                error_output(4);
+                return;
+            }
+            newOutputText = newOutputText->next;
+            toBinary(extractedNumber, 12, newOutputText->text, 0);
+            strcpy(&newOutputText->text[12], "00\0"); 
+            newOutputText->output_line_number = *IC;
+            (*IC)++;
+        }
+    } else {
+        strcpy(&newOutputText->text[0], "000000");
+        strcpy(&newOutputText->text[6], src_bin_word);
+        strcpy(&newOutputText->text[9], dst_bin_word);
+        strcpy(&newOutputText->text[12], "00\0");
+        newOutputText->output_line_number = *IC;
+        (*IC)++;
+    }
+
+
     free(newOutputText);
 }
 

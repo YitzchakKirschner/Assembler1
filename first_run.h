@@ -1,14 +1,8 @@
-// /* Symbol Table Entry Structure */
-// typedef struct Symbol {
-//     char name[MAX_MACRO_NAME_LENGTH]; // Symbol name
-//     int value;                        // Value of the symbol
-//     enum { MDEFINE, DATA, CODE, EXTERN } type; // Type of the symbol
-//     struct Symbol *next;              // Pointer to the next symbol
-// } Symbol;
+
 #include "util.h"
 
 typedef struct OutputText {
-    char text[MAX_LINE_LENGTH_PLUS_1];
+    char text[15];
     int output_line_number;
     struct OutputText *next;
 } OutputText;

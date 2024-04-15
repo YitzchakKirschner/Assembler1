@@ -164,7 +164,7 @@ void getWordAtIndex(const char* line, char* output, int wordIndex) {
     strcpy(tempLine, line);
 
     // Get the first token
-    token = strtok(tempLine, " \t\n");
+    token = strtok(tempLine, " ,\t\n");
 
     // Walk through other tokens
     while (token != NULL) {
@@ -180,7 +180,7 @@ void getWordAtIndex(const char* line, char* output, int wordIndex) {
             break;
         }
         i++;
-        token = strtok(NULL, " \t\n");
+        token = strtok(NULL, " ,\t\n");
     }
 }
 
