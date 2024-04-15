@@ -29,3 +29,4 @@ Symbol* findSymbol(Symbol* symbolTable, char* name, int type);
 char* getRegisterByName(char* name);
 void freeInstruction(OutputLines* instruction_output);
 void addInstrctionLine(OutputLines* current, OutputText* newOutputText, int* IC, char* src_bin_word, char* dst_bin_word, char* src_ARE, char* dst_ARE, int srcExtractedNumber, int dstExtractedNumber);
+void decodeInstruction(Symbol** symbolTable, OutputLines* current, OutputLines** data_output, char* word, char* ARE, int* extractedNumber, char** bin_word, char* tempLine, Symbol* found_symbol, char* token, int i, char* constArr);
