@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "util.h"
 #include "errors.h"
+#include "saved_words.h"
 
 
 int countLinesInFile(FILE* file) {
@@ -107,15 +108,15 @@ Symbol* findSymbol(Symbol* symbolTable, char* name, int type){
     return NULL;
 }
 
-void decodeInstruction(Symbol** symbolTable, OutputLines* current, OutputLines** data_output, char* word, char* ARE, int* extractedNumber, char** bin_word, char* tempLine, Symbol* found_symbol, char* token, int i, char* constArr){
+void decodeInstruction(char* instruction, Symbol** symbolTable, OutputLines* current, OutputLines** data_output, char* word, char* ARE, int* extractedNumber, char** bin_word, char* tempLine, Symbol* found_symbol, char* token, int i, char* constArr){
     found_symbol  = findSymbol(*symbolTable, word, 5);
 
     constArr =  removeBracketedNumber(word, extractedNumber, symbolTable);
 
     // Get the first token
-    token = strtok(tempLine, ", \t");
+    token = strtok(NULL, ", \t");
 
-    if (token[0] == '#'){
+    if (token[0] == '#' && checkRegType(0, instruction, !i)){
         strcpy(ARE, "00");
         if(i == 0)
             strcpy(current->src_operand, "00");
@@ -129,7 +130,7 @@ void decodeInstruction(Symbol** symbolTable, OutputLines* current, OutputLines**
         }
 
         toBinary(atoi(token + 1), 12, (*bin_word), 1);
-    } else if (found_symbol && found_symbol->type == MDEFINE){
+    } else if (found_symbol && found_symbol->type == MDEFINE && checkRegType(0, instruction, !i)){
         strcpy(ARE, "00");
         if(i == 0)
             strcpy(current->src_operand, "00");
@@ -143,7 +144,7 @@ void decodeInstruction(Symbol** symbolTable, OutputLines* current, OutputLines**
         }
 
         toBinary(found_symbol->value, 12, (*bin_word), 1);
-    } else if (found_symbol && found_symbol->type == DATA){
+    } else if (found_symbol && found_symbol->type == DATA && checkRegType(1, instruction, !i)){
         int textLength;
         (*bin_word) = (char *)malloc(13);
         if (!(*bin_word)) { /* Handle memory allocation error*/
@@ -165,7 +166,7 @@ void decodeInstruction(Symbol** symbolTable, OutputLines* current, OutputLines**
         // Copy the last 12 characters of the text
         strcpy((*bin_word), current_data_output->firstLine->text + (textLength - 13));
         (*bin_word)[12] = '\0';  // Null-terminate the string
-    } else if (constArr && (*extractedNumber != -1)){
+    } else if (constArr && (*extractedNumber != -1) && checkRegType(1, instruction, !i)){
         found_symbol = findSymbol(*symbolTable, constArr, DATA);
         if(found_symbol){
             int textLength;
@@ -190,7 +191,7 @@ void decodeInstruction(Symbol** symbolTable, OutputLines* current, OutputLines**
             strcpy((*bin_word), current_data_output->firstLine->text + (textLength - 13));
             (*bin_word)[12] = '\0';  // Null-terminate the string
         }
-    } else if(getRegisterByName(word)){
+    } else if(getRegisterByName(word) && checkRegType(0, instruction, !i)){
         (*bin_word) = (char *)malloc(4);
         if (!(*bin_word)) { /* Handle memory allocation error*/
             error_output(4);
@@ -202,7 +203,7 @@ void decodeInstruction(Symbol** symbolTable, OutputLines* current, OutputLines**
         else
             strcpy(current->dest_operand, "11");    
         strcpy((*bin_word), getRegisterByName(word));
-    } else if (found_symbol && found_symbol->type == EXTERN){
+    } else if (found_symbol && found_symbol->type == EXTERN && checkRegType(2, instruction, !i)){
         strcpy(ARE, "10");
         if(i == 0)
             strcpy(current->src_operand, "01");
@@ -326,4 +327,36 @@ void freeInstruction(OutputLines* instruction_output){
         }
         free(temp);
     }
+}
+
+
+/*
+ * Function to check if the given ARE code is present in the src or dst reg_type
+ * fields of the specified command.
+ * @param ARE - The addressing mode to check.
+ * @param commandName - The name of the command.
+ * @param isSrc - If true, check the src_reg_type; if false, check the dst_reg_type.
+ * @return true if the ARE code is found in the specified field; false otherwise.
+ */
+int checkRegType(int ARE, const char* commandName, int isSrc) {
+    char ARE_code = '0' + ARE;  // Convert integer ARE to character
+
+    Word* current = head;  // Start at the head of the list
+    while (current != NULL) {
+        // Compare the command name with the current word name
+        if (strcmp(current->name, commandName) == 0) {
+            // Check the appropriate register type field based on isSrc
+            char* reg_type = isSrc ? current->src_reg_type : current->dst_reg_type;
+            if (reg_type != NULL) {
+                // Check if the ARE_code is in the string
+                if (strchr(reg_type, ARE_code) != NULL) {
+                    return 1;  // ARE code is found
+                }
+            }
+            break;  // Exit the loop if the command is found
+        }
+        current = current->next;  // Move to the next word
+    }
+
+    return 0;  // ARE code not found or command not found
 }

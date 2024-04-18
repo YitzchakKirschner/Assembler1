@@ -370,7 +370,8 @@ CMakeFiles/assembler.dir/util.c.o: util.c \
   /usr/include/alloca.h \
   /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
   util.h \
-  errors.h
+  errors.h \
+  saved_words.h
 
 
 util.c:

@@ -1,3 +1,5 @@
+#ifndef SAVED_WORDS_H
+#define SAVED_WORDS_H
 /* Define the word struct*/
 typedef struct Word {
     char name[4];          
@@ -25,3 +27,4 @@ Word* createWord(char name[], int code, char src_reg_type[], char dst_reg_type[]
 Word* defineLanguage();
 void freeLanguage(Word* head);
 int isSavedWord(char first_field[]);
+#endif

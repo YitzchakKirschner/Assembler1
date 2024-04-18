@@ -2,10 +2,6 @@
 #include "util.h"
 
 
-
-
-
-
 FILE* firstRun(FILE* as_file_ptr, char* file_name, Symbol **symbolTable, MacroNode* macros, int IC, int DC);
 void processDefineStatement(char *line, Symbol **symbolTable, MacroNode* macro_head);
 //Symbol* findSymbol(Symbol* symbolTable, char* name, int type);
@@ -16,38 +12,9 @@ int isTag(char *word, MacroNode* macros);
 void writeBinaryNumbersToDataSegment(OutputLines** data_output, const char* numbers, int* DC);
 void writeAsciiBinaryToDataSegment(OutputLines** data_output, const char* str, int* DC);
 void freeOutputLines(OutputLines *output_lines);
-void writeDataToFile(OutputLines* data_output_head, FILE* output_file_ptr);
+//void writeDataToFile(OutputLines* data_output_head, FILE* output_file_ptr);
 void processCodeDirective(char *line, Symbol **symbolTable, int *IC, int* src_line, char* first_word, int tag_flag, OutputLines** instruction_output, OutputLines** data_output);
-void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output);
+void processInstruction(char* instruction, char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output);
 
-void processCmp(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output);
-
-void processAdd(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output);
-
-void processSub(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output);
-
-void processNot(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output);
-
-void processClr(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output);
-
-void processLea(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output);
-
-void processInc(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output);
-
-void processDec(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output);
-
-void processJmp(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output);
-
-void processBne(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output);
-
-void processRed(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output);
-
-void processPrn(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output);
-
-void processJsr(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output);
-
-void processRts(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output);
-
-void processHlt(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output);
 #define DATA_CODE 1
 #define STRING_CODE 2

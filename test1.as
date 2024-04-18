@@ -2,7 +2,7 @@ tag: .data 2,3,1 ,   1
 .string "01234" 
 .define len = 2
 try: .data 4,  5 ,   8,  0, 1
-mov try[len], tag[len]
+lea tag, tag[len]
 mcr 1
 AAAAAAAAAAAAAA
 BBBBBBBBBBBBBB

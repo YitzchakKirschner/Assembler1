@@ -9,6 +9,7 @@
 
 
 
+
 #define MAX_TAG_LENGTH 31
 
 /* Main Assembler Algorithm Functions */
@@ -105,7 +106,7 @@ FILE* firstRun(FILE* am_file_ptr, char* file_name, Symbol **symbolTable, MacroNo
         src_line++;
 
     }
-    writeDataToFile(data_output_head, output_file_ptr);
+    //writeDataToFile(data_output_head, output_file_ptr);
 
     freeOutputLines(data_output_head);
     freeOutputLines(instruction_output_head);
@@ -365,42 +366,21 @@ void freeOutputLines(OutputLines *outputLines) {
 
 
 void processCodeDirective(char *line, Symbol **symbolTable, int *IC, int* src_line, char* first_word, int tag_flag, OutputLines** instruction_output, OutputLines** data_output){
-    if(strcmp(first_word, "mov") == 0){
-        processMov(line, symbolTable, IC, src_line, instruction_output, data_output);
-    } else if(strcmp(first_word, "cmp") == 0){
-        processCmp(line, symbolTable, IC, src_line, instruction_output, data_output);
-    } else if(strcmp(first_word, "add") == 0){
-        processAdd(line, symbolTable, IC, src_line, instruction_output, data_output);
-    } else if(strcmp(first_word, "sub") == 0){
-        processSub(line, symbolTable, IC, src_line, instruction_output, data_output);
-    } else if(strcmp(first_word, "not") == 0){
-        processNot(line, symbolTable, IC, src_line, instruction_output, data_output);
-    } else if(strcmp(first_word, "clr") == 0){
-        processClr(line, symbolTable, IC, src_line, instruction_output, data_output);
-    } else if(strcmp(first_word, "lea") == 0){
-        processLea(line, symbolTable, IC, src_line, instruction_output, data_output);
-    } else if(strcmp(first_word, "inc") == 0){
-        processInc(line, symbolTable, IC, src_line, instruction_output, data_output);
-    } else if(strcmp(first_word, "dec") == 0){
-        processDec(line, symbolTable, IC, src_line, instruction_output, data_output);
-    } else if(strcmp(first_word, "jmp") == 0){
-        processJmp(line, symbolTable, IC, src_line, instruction_output, data_output);
-    } else if(strcmp(first_word, "bne") == 0){
-        processBne(line, symbolTable, IC, src_line, instruction_output, data_output);
-    } else if(strcmp(first_word, "red") == 0){
-        processRed(line, symbolTable, IC, src_line, instruction_output, data_output);
-    } else if(strcmp(first_word, "prn") == 0){
-        processPrn(line, symbolTable, IC, src_line, instruction_output, data_output);
-    } else if(strcmp(first_word, "jsr") == 0){
-        processJsr(line, symbolTable, IC, src_line, instruction_output, data_output);
-    } else if(strcmp(first_word, "rts") == 0){
-        processRts(line, symbolTable, IC, src_line, instruction_output, data_output);
-    } else if(strcmp(first_word, "hlt") == 0){
-        processHlt(line, symbolTable, IC, src_line, instruction_output, data_output);
+    Word* current_word = (Word*)malloc(sizeof(Word));
+    if (!current_word) { /* Handle memory allocation error*/
+        error_output(4);
+        return;
+    }
+    current_word = head;
+    while(current_word){
+        if(strcmp(first_word, current_word->name) == 0){
+            processInstruction(first_word, line, symbolTable, IC, src_line, instruction_output, data_output);
+        }
+        current_word = current_word->next;
     }
 }
 
-void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
+void processInstruction(char* instruction, char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
     OutputLines* current = *instruction_output;  // Create a temporary pointer to traverse the list
     Symbol* found_symbol;
     char tempLine[82];  // Temporary numbers buffer
@@ -440,6 +420,7 @@ void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, Output
 
     getWordAtIndex(tempLine, src_word, 2);
     getWordAtIndex(tempLine, dst_word, 3);
+    token = strtok(tempLine, ", \t");
 
     for(i = 0; i < 2; i++){ 
         if(i == 0){
@@ -454,7 +435,7 @@ void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, Output
             // strcpy(bin_word, dst_bin_word);
         }
         
-        decodeInstruction(symbolTable, current, data_output, word, ARE, &extractedNumber, &bin_word, tempLine, found_symbol, token, i, constArr);
+        decodeInstruction(instruction,  symbolTable, current, data_output, word, ARE, &extractedNumber, &bin_word, tempLine, found_symbol, token, i, constArr);
 
         if (i == 0){
             strcpy(src_ARE, ARE);
@@ -480,75 +461,4 @@ void processMov(char* line, Symbol** symbolTable, int* IC, int* src_line, Output
     
 
     freeInstruction(*instruction_output);
-}
-
-void processCmp(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
-
-}
-
-void processAdd(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
-
-}
-
-void processSub(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
-
-}
-
-void processNot(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
-
-}
-
-void processClr(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
-
-}
-
-void processLea(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
-
-}
-
-void processInc(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
-
-}
-
-void processDec(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
-
-}
-
-void processJmp(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
-
-}
-
-void processBne(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
-
-}
-
-void processRed(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
-
-}
-
-void processPrn(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
-
-}
-
-void processJsr(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
-
-}
-
-void processRts(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
-
-}
-
-void processHlt(char* line, Symbol** symbolTable, int* IC, int* src_line, OutputLines** instruction_output, OutputLines** data_output){
-
-}
-
-
-void writeDataToFile(OutputLines* data_output_head, FILE* output_file_ptr) {
-    OutputLines* current = data_output_head;
-
-    while (current->firstLine != NULL) {
-        // Assuming data is a null-terminated string
-        fprintf(output_file_ptr, "%s", current->firstLine->text);
-        current = current->next;
-    }
 }
